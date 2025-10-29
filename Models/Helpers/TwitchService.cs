@@ -90,33 +90,29 @@ namespace Automatic_Replay_Buffer.Models.Helpers
 
     public class TwitchService
     {
-        private readonly LoggingService _LoggingService;
+        private readonly LoggingService LoggingService;
         private readonly JsonStorageService StorageService;
 
-        private string path { get; } = "token.json";
+        private string Path { get; } = "token.json";
         static string TimeRemaining = "";
 
-        public TwitchService(LoggingService logger, JsonStorageService storage)
+        public TwitchService(LoggingService _loggingService, JsonStorageService _storageService)
         {
-            _LoggingService = logger;
-            StorageService = storage;
+            LoggingService = _loggingService;
+            StorageService = _storageService;
         }
 
         private async Task SaveToken(TokenData token)
         {
-            //string json = JsonConvert.SerializeObject(token, Formatting.Indented);
-            //await File.WriteAllTextAsync(path, json);
-            await JsonStorageService.SaveConfigAsync(path, token);
+            await StorageService.SaveConfigAsync(Path, token);
         }
 
         private async Task<TokenData?> LoadToken()
         {
-            if (!File.Exists(path))
+            if (!File.Exists(Path))
                 return null;
 
-            //string json = await File.ReadAllTextAsync(path);
-            //return JsonConvert.DeserializeObject<TokenData>(json);
-            return await JsonStorageService.LoadConfigAsync(path, new TokenData());
+            return await StorageService.LoadConfigAsync(Path, new TokenData());
         }
 
         public async Task<string> GetValidTokenAsync(string clientId, string clientSecret)
@@ -149,15 +145,13 @@ namespace Automatic_Replay_Buffer.Models.Helpers
 
                 await SaveToken(newToken);
 
-                _LoggingService.Log("Successfully retrieved new Twitch token");
-                Debug.WriteLine("Successfully retrieved new Twitch token");
+                LoggingService.Log("Successfully retrieved new Twitch token");
 
                 return accessToken;
             }
             catch (Exception ex)
             {
-                _LoggingService.Log($"Error when getting valid token: {ex.Message}");
-                Debug.WriteLine($"Error when getting valid token: {ex.Message}");
+                LoggingService.Log($"Error when getting valid token: {ex.Message}");
                 throw;
             }
         }
@@ -180,14 +174,12 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                 var json = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
 
-                _LoggingService.Log("Successfully requested access token from Twitch");
-                Debug.WriteLine("Successfully requested access token from Twitch");
+                LoggingService.Log("Successfully requested access token from Twitch");
                 return json;
             }
             catch (Exception ex)
             {
-                _LoggingService.Log($"Error when authenticating with Twitch: {ex.Message}");
-                Debug.WriteLine($"Error when authenticating with Twitch: {ex.Message}");
+                LoggingService.Log($"Error when authenticating with Twitch: {ex.Message}");
                 throw;
             }
         }

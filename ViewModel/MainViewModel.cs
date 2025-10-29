@@ -27,10 +27,10 @@ namespace Automatic_Replay_Buffer.ViewModel
         private CancellationTokenSource? ctsMonitor;
         public JsonStorageService StorageService;
         public GameMonitorService MonitorService;
-        public OBSService _OBSService { get; }
-        public OBSData _OBSData => StorageService.OBS;
-        public LoggingService _LoggingService { get; } = new();
-        public TwitchService _TwitchService;
+        public OBSService OBSService { get; }
+        public OBSData OBSData => StorageService.OBS;
+        public LoggingService LoggingService { get; } = new();
+        public TwitchService TwitchService;
 
         public ObservableCollection<MonitorData> ActiveGames { get; private set; } = [];
 
@@ -204,10 +204,10 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public MainViewModel()
         {
-            StorageService = new JsonStorageService();
-            _OBSService = new OBSService(this);
+            StorageService = new JsonStorageService(LoggingService);
+            OBSService = new OBSService(LoggingService, this);
 
-            _LoggingService.LogReceived += OnLogReceived;
+            LoggingService.LogReceived += OnLogReceived;
 
             FetchCommand = new RelayCommand(async _ =>
             {
@@ -215,12 +215,11 @@ namespace Automatic_Replay_Buffer.ViewModel
                 try
                 {
                     IsFetching = true;
-                    await FetchGamesAsync(ctsFetch.Token);
+                    await FetchDatabaseAsync(ctsFetch.Token);
                 }
                 catch (OperationCanceledException)
                 {
-                    _LoggingService.Log("Database operation was cancelled");
-                    Debug.WriteLine("Database operation was cancelled");
+                    LoggingService.Log("Database operation was cancelled");
                 }
                 finally
                 {
@@ -246,7 +245,7 @@ namespace Automatic_Replay_Buffer.ViewModel
 
                 try
                 {
-                    var existingFilter = await JsonStorageService.LoadConfigAsync("filter.json", new List<FilterData>());
+                    var existingFilter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
                     bool changed = false;
 
                     foreach (var item in selectedItems.Cast<MonitorData>())
@@ -272,7 +271,7 @@ namespace Automatic_Replay_Buffer.ViewModel
                     if (changed)
                     {
                         StorageService.Filter = existingFilter;
-                        await JsonStorageService.SaveConfigAsync("filter.json", existingFilter);
+                        await StorageService.SaveConfigAsync("filter.json", existingFilter);
 
                         foreach (var item in selectedItems.Cast<MonitorData>().ToList())
                         {
@@ -289,8 +288,7 @@ namespace Automatic_Replay_Buffer.ViewModel
                 }
                 catch (Exception ex)
                 {
-                    _LoggingService.Log($"Failed to add selected items to filter: {ex.Message}");
-                    Debug.WriteLine($"Failed to add selected items to filter: {ex.Message}");
+                    LoggingService.Log($"Failed to add selected items to filter: {ex.Message}");
                 }
             });
         }
@@ -303,18 +301,18 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public async Task InitializeAsync()
         {
-            StorageService.Client = await JsonStorageService.LoadConfigAsync("client.json", new ClientData { ID = "", Secret = "" });
-            StorageService.Token = await JsonStorageService.LoadConfigAsync("token.json", new TokenData { AccessToken = "", ExpiresIn = 0 });
-            StorageService.Game = await JsonStorageService.LoadConfigAsync("games.json", new List<GameData>());
-            StorageService.Filter = await JsonStorageService.LoadConfigAsync("filter.json", new List<FilterData>());
-            StorageService.OBS = await JsonStorageService.LoadConfigAsync("websocket.json", new OBSData { Address = "", Password = "" });
+            StorageService.Client = await StorageService.LoadConfigAsync("client.json", new ClientData { ID = "", Secret = "" });
+            StorageService.Token = await StorageService.LoadConfigAsync("token.json", new TokenData { AccessToken = "", ExpiresIn = 0 });
+            StorageService.Game = await StorageService.LoadConfigAsync("games.json", new List<GameData>());
+            StorageService.Filter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
+            StorageService.OBS = await StorageService.LoadConfigAsync("websocket.json", new OBSData { Address = "", Password = "" });
 
             TokenText = StorageService.Token is { IsExpired: false } ? "Valid" : "Invalid";
             DatabaseText = (StorageService.Game?.Count ?? 0) > 0 ? "Available" : "Not Found";
 
-            _LoggingService.Log($"Loaded database with {StorageService.Game?.Count ?? 0} entries");
+            LoggingService.Log($"Loaded database with {StorageService.Game?.Count ?? 0} entries");
 
-            _OBSService.Connect(_OBSData.Address, _OBSData.Password);
+            OBSService.Connect(OBSData.Address, OBSData.Password);
 
             await StartMonitoringAsync();
         }
@@ -327,7 +325,7 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public async Task StartMonitoringAsync()
         {
-            MonitorService = new GameMonitorService(StorageService, _OBSService, this, true);
+            MonitorService = new GameMonitorService(LoggingService, StorageService, OBSService, this, true);
 
             ctsMonitor = new CancellationTokenSource();
 
@@ -369,10 +367,10 @@ namespace Automatic_Replay_Buffer.ViewModel
             await MonitorService.MonitorGamesAsync(statusProgress, gamesProgress, ctsMonitor.Token);
         }
 
-        private async Task FetchGamesAsync(CancellationToken cts)
+        private async Task FetchDatabaseAsync(CancellationToken cts)
         {
-            _TwitchService = new TwitchService(_LoggingService, StorageService);
-            string validToken = await _TwitchService.GetValidTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
+            TwitchService = new TwitchService(LoggingService, StorageService);
+            string validToken = await TwitchService.GetValidTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
 
             const int pageSize = 500;
             int offset = 0;
@@ -382,8 +380,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             ProgressValue = 0;
             DatabaseText = "Fetching";
             StatusText = "Fetching Database";
-            _LoggingService.Log("Fetching database...");
-            Debug.WriteLine("Fetching database...");
+            LoggingService.Log("Fetching database...");
 
             using var http = new HttpClient();
             http.DefaultRequestHeaders.Add("Client-ID", StorageService.Client.ID);
@@ -426,7 +423,7 @@ namespace Automatic_Replay_Buffer.ViewModel
                 ProgressText = $"Fetched {totalFetched}/{totalEstimated} (estimated) games...";
             }
 
-            await JsonStorageService.SaveConfigAsync("games.json", allGames);
+            await StorageService.SaveConfigAsync("games.json", allGames);
 
             StorageService.Game = allGames;
 
@@ -434,8 +431,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             ProgressText = $"Database fetched! {allGames.Count} games saved.";
             DatabaseText = "Available";
             StatusText = "Idle";
-            _LoggingService.Log("Finished fetching database");
-            Debug.WriteLine("Finished fetching database");
+            LoggingService.Log("Finished fetching database");
         }
     }
 }
