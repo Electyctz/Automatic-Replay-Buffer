@@ -45,15 +45,6 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         // gets the executable path of a process by its PID, with workaround for anti-cheat
         public static string? GetProcessExecutablePath(int pid)
         {
-            try
-            {
-                using var p = Process.GetProcessById(pid);
-                try { return p.MainModule?.FileName; }
-                catch {}
-            }
-            catch {}
-
-            // fallback
             const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
             IntPtr h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
             if (h == IntPtr.Zero) return null;
