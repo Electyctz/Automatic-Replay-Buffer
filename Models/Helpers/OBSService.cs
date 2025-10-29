@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace Automatic_Replay_Buffer.Models.Helpers
 {
@@ -16,6 +18,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         private readonly LoggingService LoggingService;
         private readonly OBSWebsocket OBSWebsocket = new();
         private readonly MainViewModel vm;
+        private readonly Dispatcher Dispatcher = System.Windows.Application.Current.Dispatcher;
         public bool isActive;
 
         private string? _address;
@@ -45,31 +48,40 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                 vm.WebsocketText = "Connecting";
                 LoggingService.Log("Attempting to connect to WebSocket...");
 
-                try
+                Task.Run(() =>
                 {
-                    OBSWebsocket.ConnectAsync(address, password);
-                }
-                catch (Exception ex)
-                {
-                    vm.WebsocketText = "Disconnected";
-                    LoggingService.Log($"Error when connecting to OBS WebSocket: {ex.Message}");
-                }
+                    try
+                    {
+                        OBSWebsocket.ConnectAsync(address, password);
+                    }
+                    catch (Exception ex)
+                    {
+                        vm.WebsocketText = "Disconnected";
+                        LoggingService.Log($"Error when connecting to OBS WebSocket: {ex.Message}");
+                    }
+                });
             }
         }
 
         private void Obs_Connected(object? sender, EventArgs e)
         {
-            vm.WebsocketText = "Connected";
-            isActive = OBSWebsocket.GetReplayBufferStatus();
+            Dispatcher.Invoke(() =>
+            {
+                vm.WebsocketText = "Connected";
+            });
 
+            isActive = OBSWebsocket.GetReplayBufferStatus();
             LoggingService.Log("Connected to WebSocket");
         }
 
         private void Obs_Disconnected(object? sender, ObsDisconnectionInfo e)
         {
-            vm.WebsocketText = "Disconnected";
-            isActive = false;
+            Dispatcher.Invoke(() =>
+            {
+                vm.WebsocketText = "Disconnected";
+            });
 
+            isActive = false;
             LoggingService.Log("Disconnected from WebSocket");
 
             if (!string.IsNullOrEmpty(_address) && !string.IsNullOrEmpty(_password))
@@ -82,14 +94,17 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             {
                 LoggingService.Log("Starting OBS Replay Buffer...");
 
-                try
+                Task.Run(() =>
                 {
-                    OBSWebsocket.StartReplayBuffer();
-                }
-                catch (Exception ex)
-                {
-                    LoggingService.Log($"Error when starting Replay Buffer: {ex.Message}");
-                }
+                    try
+                    {
+                        OBSWebsocket.StartReplayBuffer();
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Log($"Error when starting Replay Buffer: {ex.Message}");
+                    }
+                });
             }
         }
 
@@ -99,14 +114,17 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             {
                 LoggingService.Log("Stopping OBS Replay Buffer...");
 
-                try
+                Task.Run(() =>
                 {
-                    OBSWebsocket.StopReplayBuffer();
-                }
-                catch (Exception ex)
-                {
-                    LoggingService.Log($"Error when stopping Replay Buffer: {ex.Message}");
-                }
+                    try
+                    {
+                        OBSWebsocket.StopReplayBuffer();
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Log($"Error when stopping Replay Buffer: {ex.Message}");
+                    }
+                });
             }
         }
 
@@ -116,14 +134,17 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             {
                 LoggingService.Log("Disconnecting from WebSocket...");
 
-                try
+                Task.Run(() =>
                 {
-                    OBSWebsocket.Disconnect();
-                }
-                catch (Exception ex)
-                {
-                    LoggingService.Log($"Error when disconnecting from OBS: {ex.Message}");
-                }
+                    try
+                    {
+                        OBSWebsocket.Disconnect();
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Log($"Error when disconnecting from OBS: {ex.Message}");
+                    }
+                });
             }
         }
     }
