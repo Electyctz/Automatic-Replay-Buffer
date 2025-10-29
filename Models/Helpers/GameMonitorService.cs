@@ -40,22 +40,22 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                 while (!cts.IsCancellationRequested)
                 {
                     // if user is fetching game database, pause monitoring
-                    if (_vm.IsFetching == true)
-                    {
-                        try
-                        {
-                            while (_vm.IsFetching && !cts.IsCancellationRequested)
-                            {
-                                _vm.MonitorText = "Paused";
-                                await Task.Delay(1000, cts);
-                            }
-                            continue;
-                        }
-                        finally
-                        {
-                            _vm.MonitorText = "Running";
-                        }
-                    }
+                    //if (_vm.IsFetching == true)
+                    //{
+                    //    try
+                    //    {
+                    //        while (_vm.IsFetching && !cts.IsCancellationRequested)
+                    //        {
+                    //            _vm.MonitorText = "Paused";
+                    //            await Task.Delay(1000, cts);
+                    //        }
+                    //        continue;
+                    //    }
+                    //    finally
+                    //    {
+                    //        _vm.MonitorText = "Running";
+                    //    }
+                    //}
 
                     try
                     {

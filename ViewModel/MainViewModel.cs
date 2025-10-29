@@ -245,7 +245,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             //     }
             //});
 
-            CancelFetchCommand = new RelayCommand(_ => ctsFetch?.Cancel());
+            //CancelFetchCommand = new RelayCommand(_ => ctsFetch?.Cancel());
 
             AddFilterCommand = new RelayCommand(async obj =>
             {
