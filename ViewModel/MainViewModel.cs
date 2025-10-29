@@ -380,100 +380,99 @@ namespace Automatic_Replay_Buffer.ViewModel
             await MonitorService.MonitorGamesAsync(statusProgress, gamesProgress, ctsMonitor.Token);
         }
 
-        // https://drive.usercontent.google.com/download?id=1EAtAtC4ln2EJxg91c34Zo3-sJoNzWuhP
-        private async Task FetchDatabaseAsync(CancellationToken cts)
-        {
-            TwitchService = new TwitchService(LoggingService, StorageService);
+        //private async Task FetchDatabaseAsync(CancellationToken cts)
+        //{
+        //    TwitchService = new TwitchService(LoggingService, StorageService);
 
-            string token;
+        //    string token;
 
-            if (await TwitchService.AuthenticateTokenAsync())
-            {
-                token = StorageService.Token.AccessToken;
-            }
-            else
-            {
-                token = await TwitchService.GetTwitchTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
-            }
+        //    if (await TwitchService.AuthenticateTokenAsync())
+        //    {
+        //        token = StorageService.Token.AccessToken;
+        //    }
+        //    else
+        //    {
+        //        token = await TwitchService.GetTwitchTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
+        //    }
 
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(token))
-                {
-                    const int pageSize = 500;
-                    int offset = 0;
-                    int totalEstimated = 341_215;
-                    int totalFetched = 0;
+        //    try
+        //    {
+        //        if (!string.IsNullOrWhiteSpace(token))
+        //        {
+        //            const int pageSize = 500;
+        //            int offset = 0;
+        //            int totalEstimated = 341_215;
+        //            int totalFetched = 0;
 
-                    DatabaseProgressValue = 0;
-                    DatabaseText = "Fetching";
-                    StatusText = "Fetching Database";
-                    LoggingService.Log("Fetching database...");
+        //            DatabaseProgressValue = 0;
+        //            DatabaseText = "Fetching";
+        //            StatusText = "Fetching Database";
+        //            LoggingService.Log("Fetching database...");
 
-                    using var http = new HttpClient();
-                    http.DefaultRequestHeaders.Add("Client-ID", StorageService.Client.ID);
-                    http.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+        //            using var http = new HttpClient();
+        //            http.DefaultRequestHeaders.Add("Client-ID", StorageService.Client.ID);
+        //            http.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-                    var allGames = new List<GameData>();
+        //            var allGames = new List<GameData>();
 
-                    while (true)
-                    {
-                        cts.ThrowIfCancellationRequested();
+        //            while (true)
+        //            {
+        //                cts.ThrowIfCancellationRequested();
 
-                        string query = $@"
-                    fields id, name, game_type;
-                    where (game_type = 0 | game_type = 1 | game_type = 8 | game_type = 9 | game_type = 10 | game_type = 11);
-                    limit {pageSize};
-                    offset {offset};
-                    sort id asc;";
+        //                string query = $@"
+        //            fields id, name, game_type;
+        //            where (game_type = 0 | game_type = 1 | game_type = 8 | game_type = 9 | game_type = 10 | game_type = 11);
+        //            limit {pageSize};
+        //            offset {offset};
+        //            sort id asc;";
 
-                        var request = new HttpRequestMessage(HttpMethod.Post, "https://api.igdb.com/v4/games")
-                        {
-                            Content = new StringContent(query, Encoding.UTF8, "text/plain")
-                        };
+        //                var request = new HttpRequestMessage(HttpMethod.Post, "https://api.igdb.com/v4/games")
+        //                {
+        //                    Content = new StringContent(query, Encoding.UTF8, "text/plain")
+        //                };
 
-                        var response = await RateLimitHelper.SendWithRateLimit(http, request, cts);
+        //                var response = await RateLimitHelper.SendWithRateLimit(http, request, cts);
 
-                        if (!response.IsSuccessStatusCode)
-                            break;
+        //                if (!response.IsSuccessStatusCode)
+        //                    break;
 
-                        var json = await response.Content.ReadAsStringAsync(cts);
-                        var games = JsonConvert.DeserializeObject<List<GameData>>(json);
+        //                var json = await response.Content.ReadAsStringAsync(cts);
+        //                var games = JsonConvert.DeserializeObject<List<GameData>>(json);
 
-                        if (games == null || games.Count == 0)
-                            break;
+        //                if (games == null || games.Count == 0)
+        //                    break;
 
-                        allGames.AddRange(games);
-                        offset += pageSize;
-                        totalFetched += games.Count;
+        //                allGames.AddRange(games);
+        //                offset += pageSize;
+        //                totalFetched += games.Count;
 
-                        DatabaseProgressValue = Math.Min(100, (int)((double)totalFetched / totalEstimated * 100));
-                        DatabaseProgressText = $"Fetched {totalFetched}/{totalEstimated} (estimated) games...";
-                    }
+        //                DatabaseProgressValue = Math.Min(100, (int)((double)totalFetched / totalEstimated * 100));
+        //                DatabaseProgressText = $"Fetched {totalFetched}/{totalEstimated} (estimated) games...";
+        //            }
 
-                    if (allGames.Count == 0)
-                    {
-                        LoggingService.Log("No games were fetched from the database");
-                        return;
-                    }
+        //            if (allGames.Count == 0)
+        //            {
+        //                LoggingService.Log("No games were fetched from the database");
+        //                return;
+        //            }
 
-                    await StorageService.SaveConfigAsync("games.json", allGames);
+        //            await StorageService.SaveConfigAsync("games.json", allGames);
 
-                    StorageService.Game = allGames;
+        //            StorageService.Game = allGames;
 
-                    DatabaseProgressValue = 100;
-                    DatabaseProgressText = $"Database fetched! {allGames.Count} games saved.";
-                    DatabaseText = "Available";
-                    StatusText = "Idle";
-                    LoggingService.Log("Finished fetching database");
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Log($"Error while fetching database: {ex.Message}");
-                throw;
-            }
-        }
+        //            DatabaseProgressValue = 100;
+        //            DatabaseProgressText = $"Database fetched! {allGames.Count} games saved.";
+        //            DatabaseText = "Available";
+        //            StatusText = "Idle";
+        //            LoggingService.Log("Finished fetching database");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LoggingService.Log($"Error while fetching database: {ex.Message}");
+        //        throw;
+        //    }
+        //}
 
         private void OnLogReceived(string msg)
         {
