@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection.Metadata;
+using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -17,12 +18,14 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using static System.Net.WebRequestMethods;
 using Brush = System.Windows.Media.Brush;
 
 namespace Automatic_Replay_Buffer.ViewModel
 {
     public class MainViewModel : ObservableObject
     {
+        #region
         private CancellationTokenSource? ctsFetch;
         private CancellationTokenSource? ctsMonitor;
         public JsonStorageService StorageService;
@@ -192,7 +195,7 @@ namespace Automatic_Replay_Buffer.ViewModel
         private bool _isFetching = false;
         public bool IsFetching
         {
-            get => _isFetching; 
+            get => _isFetching;
             set
             {
                 if (_isFetching != value)
@@ -204,6 +207,7 @@ namespace Automatic_Replay_Buffer.ViewModel
                 }
             }
         }
+        #endregion
 
         public MainViewModel()
         {
@@ -302,18 +306,34 @@ namespace Automatic_Replay_Buffer.ViewModel
 
             StorageService.Client = await StorageService.LoadConfigAsync("client.json", new ClientData { ID = "", Secret = "" });
             StorageService.Token = await StorageService.LoadConfigAsync("token.json", new TokenData { AccessToken = ""});
-            StorageService.Game = await StorageService.LoadConfigAsync("games.json", new List<GameData>());
             StorageService.Filter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
             StorageService.OBS = await StorageService.LoadConfigAsync("websocket.json", new OBSData { Address = "", Password = "" });
 
             TokenText = await TwitchService.AuthenticateTokenAsync() ? "Valid" : "Invalid";
-            DatabaseText = (StorageService.Game?.Count ?? 0) > 0 ? "Available" : "Not Found";
-
-            LoggingService.Log($"Loaded database with {StorageService.Game?.Count ?? 0} entries");
 
             OBSService.Connect(OBSData.Address, OBSData.Password);
 
+            StorageService.Game = await DownloadDatabase();
+            DatabaseText = (StorageService.Game?.Count ?? 0) > 0 ? "Available" : "Not Found";
+            LoggingService.Log($"Loaded database with {StorageService.Game?.Count ?? 0} entries");
+
             await StartMonitoringAsync();
+        }
+
+        public async Task<List<GameData>> DownloadDatabase()
+        {
+            try
+            {
+                string json = await HttpClient.GetStringAsync("https://drive.usercontent.google.com/download?id=1EAtAtC4ln2EJxg91c34Zo3-sJoNzWuhP");
+                List<GameData> database = await Task.Run(() => JsonConvert.DeserializeObject<List<GameData>>(json));
+
+                return database;
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Log($"Error loading game database: {ex.Message}");
+                return [];
+            }
         }
 
         public async Task StartMonitoringAsync()
