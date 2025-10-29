@@ -25,12 +25,14 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             {
                 if (!File.Exists(_path))
                 {
-                    await SaveConfigAsync(_path, _obj);
+                    await SaveConfigAsync(_path, _obj).ConfigureAwait(false);
                     return _obj;
                 }
 
-                string json = await File.ReadAllTextAsync(_path);
-                return JsonConvert.DeserializeObject<T>(json);
+                string json = await File.ReadAllTextAsync(_path).ConfigureAwait(false);
+
+                T result = await Task.Run(() => JsonConvert.DeserializeObject<T>(json));
+                return result;
             }
             catch (Exception ex)
             {
@@ -43,8 +45,9 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         {
             try
             {
-                string json = JsonConvert.SerializeObject(_obj, Formatting.Indented);
-                await File.WriteAllTextAsync(_path, json);
+                string json = await Task.Run(() => JsonConvert.SerializeObject(_obj, Formatting.Indented));
+
+                await File.WriteAllTextAsync(_path, json).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
