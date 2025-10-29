@@ -3,153 +3,63 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Windows;
 
 namespace Automatic_Replay_Buffer.Models.Helpers
 {
-    //public static class TwitchHelper
-    //{
-    //    public static string TokenPath => "token.json";
-    //    static string TimeRemaining = "";
-
-    //    private static async Task SaveToken(TokenData token)
-    //    {
-    //        string json = JsonConvert.SerializeObject(token, Formatting.Indented);
-    //        await File.WriteAllTextAsync(TokenPath, json);
-    //    }
-
-    //    private static async Task<TokenData?> LoadToken()
-    //    {
-    //        if (!File.Exists(TokenPath))
-    //            return null;
-
-    //        string json = await File.ReadAllTextAsync(TokenPath);
-    //        return JsonConvert.DeserializeObject<TokenData>(json);
-    //    }
-
-    //    public static async Task<string> GetValidTokenAsync(string clientId, string clientSecret)
-    //    {
-    //        var token = await LoadToken();
-
-    //        TimeRemaining = $"{token.TimeRemaining.Days}d {token.TimeRemaining.Hours}h {token.TimeRemaining.Minutes}m";
-
-    //        if (token != null && !token.IsExpired)
-    //        {
-    //            return token.AccessToken;
-    //        }
-
-    //        string json = await GetAccessTokenAsync(clientId, clientSecret);
-
-    //        var tokenObj = JsonConvert.DeserializeObject<dynamic>(json);
-    //        string accessToken = tokenObj.access_token;
-    //        int expiresIn = tokenObj.expires_in;
-
-    //        var newToken = new TokenData
-    //        {
-    //            AccessToken = accessToken,
-    //            ExpiresIn = expiresIn
-    //        };
-
-    //        DateTime _ExpiresAt = DateTime.UtcNow.AddSeconds(expiresIn);
-    //        TimeSpan _TimeRemaining = _ExpiresAt - DateTime.UtcNow;
-    //        TimeRemaining = $"{_TimeRemaining.Days}d {_TimeRemaining.Hours}h {_TimeRemaining.Minutes}m";
-
-    //        await SaveToken(newToken);
-
-    //        return accessToken;
-    //    }
-
-    //    public static async Task<string> GetAccessTokenAsync(string clientId, string clientSecret)
-    //    {
-    //        using var http = new HttpClient() { Timeout = TimeSpan.FromSeconds(10) };
-
-    //        var parameters = new Dictionary<string, string>
-    //        {
-    //            { "client_id", clientId },
-    //            { "client_secret", clientSecret },
-    //            { "grant_type", "client_credentials" }
-    //        };
-    //        var content = new FormUrlEncodedContent(parameters);
-
-    //        try
-    //        {
-    //            var response = await http.PostAsync("https://id.twitch.tv/oauth2/token", content);
-
-    //            var json = await response.Content.ReadAsStringAsync();
-
-    //            response.EnsureSuccessStatusCode();
-    //            return json;
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            Debug.WriteLine($"Error when authenticating with Twitch: {ex.Message}");
-    //            throw;
-    //        }
-    //    }
-    //}
-
-    public class TwitchService(LoggingService _loggingService, JsonStorageService _storageService)
+    public class TwitchService(LoggingService LoggingService, JsonStorageService StorageService)
     {
-        private string Path { get; } = "token.json";
-        static string TimeRemaining = "";
+        private static readonly HttpClient HttpClient = new();
+        private string TokenPath { get; } = "token.json";
 
-        private async Task SaveToken(TokenData token)
-        {
-            await _storageService.SaveConfigAsync(Path, token);
-        }
-
-        private async Task<TokenData?> LoadToken()
-        {
-            if (!File.Exists(Path))
-                return null;
-
-            return await _storageService.LoadConfigAsync(Path, new TokenData());
-        }
-
-        public async Task<string> GetValidTokenAsync(string clientId, string clientSecret)
+        private async Task SaveTokenAsync(TokenData token)
         {
             try
             {
-                var token = await LoadToken();
-
-                if (token != null && !token.IsExpired)
-                {
-                    TimeRemaining = $"{token.TimeRemaining.Days}d {token.TimeRemaining.Hours}h {token.TimeRemaining.Minutes}m";
-                    return token.AccessToken;
-                }
-
-                string json = await GetAccessTokenAsync(clientId, clientSecret);
-
-                var tokenObj = JsonConvert.DeserializeObject<dynamic>(json);
-                string accessToken = tokenObj.access_token;
-                int expiresIn = tokenObj.expires_in;
-
-                var newToken = new TokenData
-                {
-                    AccessToken = accessToken,
-                    ExpiresIn = expiresIn
-                };
-
-                DateTime expiresAt = DateTime.UtcNow.AddSeconds(expiresIn);
-                TimeSpan timeRemaining = expiresAt - DateTime.UtcNow;
-                TimeRemaining = $"{timeRemaining.Days}d {timeRemaining.Hours}h {timeRemaining.Minutes}m";
-
-                await SaveToken(newToken);
-
-                _loggingService.Log("Successfully retrieved new Twitch token");
-
-                return accessToken;
+                await StorageService.SaveConfigAsync(TokenPath, token);
             }
-            catch (Exception ex)
+            catch { }
+            finally
             {
-                _loggingService.Log($"Error when getting valid token: {ex.Message}");
-                throw;
+                LoggingService.Log("Twitch token saved");
             }
         }
 
-        public async Task<string> GetAccessTokenAsync(string clientId, string clientSecret)
+        private async Task<TokenData?> LoadTokenAsync()
         {
-            using var http = new HttpClient() { Timeout = TimeSpan.FromSeconds(10) };
+            if (!File.Exists(TokenPath))
+                return null;
+
+            return await StorageService.LoadConfigAsync(TokenPath, new TokenData());
+        }
+
+        public async Task<bool> AuthenticateTokenAsync()
+        {
+            var token = await LoadTokenAsync();
+
+            if (!string.IsNullOrWhiteSpace(token.AccessToken))
+            {
+                try
+                {
+                    using var request = new HttpRequestMessage(HttpMethod.Get, "https://id.twitch.tv/oauth2/validate");
+                    request.Headers.Authorization = new AuthenticationHeaderValue("OAuth", token.AccessToken);
+
+                    using var response = await HttpClient.SendAsync(request);
+                    return response.IsSuccessStatusCode;
+                }
+                catch (Exception ex)
+                {
+                    LoggingService.Log($"Error when authenticating token: {ex.Message}");
+                }
+            }
+
+            return false;
+        }
+
+        public async Task<string> GetTwitchTokenAsync(string clientId, string clientSecret)
+        {
+            HttpClient.Timeout = TimeSpan.FromSeconds(10);
 
             var parameters = new Dictionary<string, string>
             {
@@ -161,16 +71,25 @@ namespace Automatic_Replay_Buffer.Models.Helpers
 
             try
             {
-                var response = await http.PostAsync("https://id.twitch.tv/oauth2/token", content);
+                var response = await HttpClient.PostAsync("https://id.twitch.tv/oauth2/token", content);
                 var json = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
 
-                _loggingService.Log("Successfully requested access token from Twitch");
-                return json;
+                var obj = JsonConvert.DeserializeObject<dynamic>(json);
+                string accessToken = obj.access_token;
+
+                var token = new TokenData
+                {
+                    AccessToken = accessToken
+                };
+
+                await SaveTokenAsync(token);
+
+                return token.AccessToken;
             }
             catch (Exception ex)
             {
-                _loggingService.Log($"Error when authenticating with Twitch: {ex.Message}");
+                LoggingService.Log($"Error when authenticating with Twitch: {ex.Message}");
                 throw;
             }
         }
