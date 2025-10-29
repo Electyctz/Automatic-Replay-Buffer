@@ -213,6 +213,7 @@ namespace Automatic_Replay_Buffer.ViewModel
         {
             StorageService = new JsonStorageService(LoggingService);
             OBSService = new OBSService(LoggingService, this);
+            TwitchService = new TwitchService(LoggingService, StorageService);
 
             LoggingService.LogReceived += OnLogReceived;
 
@@ -222,7 +223,7 @@ namespace Automatic_Replay_Buffer.ViewModel
                 try
                 {
                     IsFetching = true;
-                    await FetchDatabaseAsync(ctsFetch.Token);
+                    //await FetchDatabaseAsync(ctsFetch.Token);
                 }
                 catch (OperationCanceledException)
                 {
@@ -302,8 +303,6 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public async Task InitializeAsync()
         {
-            TwitchService = new TwitchService(LoggingService, StorageService);
-
             StorageService.Client = await StorageService.LoadConfigAsync("client.json", new ClientData { ID = "", Secret = "" });
             StorageService.Token = await StorageService.LoadConfigAsync("token.json", new TokenData { AccessToken = ""});
             StorageService.Filter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
@@ -313,14 +312,15 @@ namespace Automatic_Replay_Buffer.ViewModel
 
             OBSService.Connect(OBSData.Address, OBSData.Password);
 
-            StorageService.Game = await DownloadDatabase();
+            LoggingService.Log("Loading game database...");
+            StorageService.Game = await DownloadDatabaseAsync();
             DatabaseText = (StorageService.Game?.Count ?? 0) > 0 ? "Available" : "Not Found";
-            LoggingService.Log($"Loaded database with {StorageService.Game?.Count ?? 0} entries");
+            LoggingService.Log($"Loaded game database with {StorageService.Game?.Count ?? 0} entries");
 
             await StartMonitoringAsync();
         }
 
-        public async Task<List<GameData>> DownloadDatabase()
+        public async Task<List<GameData>> DownloadDatabaseAsync()
         {
             try
             {
