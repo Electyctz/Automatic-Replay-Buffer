@@ -217,33 +217,33 @@ namespace Automatic_Replay_Buffer.ViewModel
 
             LoggingService.LogReceived += OnLogReceived;
 
-            FetchDatabaseCommand = new RelayCommand(async _ =>
-            {
-                ctsFetch = new CancellationTokenSource();
-                try
-                {
-                    IsFetching = true;
-                    //await FetchDatabaseAsync(ctsFetch.Token);
-                }
-                catch (OperationCanceledException)
-                {
-                    LoggingService.Log("Database operation was cancelled");
-                }
-                finally
-                {
-                    IsFetching = false;
-                    ctsFetch.Dispose();
-                    ctsFetch = null;
+            //FetchDatabaseCommand = new RelayCommand(async _ =>
+            //{
+            //    ctsFetch = new CancellationTokenSource();
+            //    try
+            //    {
+            //        IsFetching = true;
+            //        //await FetchDatabaseAsync(ctsFetch.Token);
+            //    }
+            //    catch (OperationCanceledException)
+            //    {
+            //        LoggingService.Log("Database operation was cancelled");
+            //    }
+            //    finally
+            //    {
+            //        IsFetching = false;
+            //        ctsFetch.Dispose();
+            //        ctsFetch = null;
 
-                    if (ctsFetch == null)
-                    {
-                        StatusText = "Idle";
-                        DatabaseText = (StorageService.Game?.Count ?? 0) > 0 ? "Available" : "Not Found";
-                        DatabaseProgressValue = 0;
-                        DatabaseProgressText = "";
-                    }
-                 }
-            });
+            //        if (ctsFetch == null)
+            //        {
+            //            StatusText = "Idle";
+            //            DatabaseText = (StorageService.Game?.Count ?? 0) > 0 ? "Available" : "Not Found";
+            //            DatabaseProgressValue = 0;
+            //            DatabaseProgressText = "";
+            //        }
+            //     }
+            //});
 
             CancelFetchCommand = new RelayCommand(_ => ctsFetch?.Cancel());
 
