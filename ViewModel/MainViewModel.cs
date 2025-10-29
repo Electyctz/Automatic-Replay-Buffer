@@ -34,8 +34,6 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public ObservableCollection<MonitorData> ActiveGames { get; private set; } = [];
 
-        public event EventHandler OnRequestShowGameList;
-
         public ICommand FetchDatabaseCommand { get; }
         public ICommand CancelFetchCommand { get; }
         public ICommand DatabaseButtonCommand => IsFetching ? CancelFetchCommand : FetchDatabaseCommand;
