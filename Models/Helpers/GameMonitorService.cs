@@ -14,76 +14,63 @@ using System.Windows.Threading;
 
 namespace Automatic_Replay_Buffer.Models.Helpers
 {
-    public class GameMonitorService
+    public class GameMonitorService(
+        LoggingService _loggingService,
+        JsonStorageService _storageService,
+        OBSService _obsService,
+        MainViewModel _vm,
+        bool _requireFullscreen = true)
     {
-        private readonly LoggingService LoggingService;
-        private readonly JsonStorageService StorageService;
-        private readonly OBSService OBSService;
-        private readonly MainViewModel vm;
-        private readonly bool RequireFullscreen;
-
-        public GameMonitorService(
-            LoggingService _loggingService,
-            JsonStorageService _storageService,
-            OBSService _obsService,
-            MainViewModel _vm,
-            bool _requireFullscreen = true)
-        {
-            LoggingService = _loggingService;
-            StorageService = _storageService;
-            OBSService = _obsService;
-            vm = _vm;
-            RequireFullscreen = _requireFullscreen;
-        }
-
         public async Task MonitorGamesAsync(
             IProgress<string> statusProgress,
             IProgress<List<MonitorData>> gamesProgress,
             CancellationToken cts)
         {
-            if (StorageService?.Game == null || StorageService.Game.Count == 0)
+            if (_storageService?.Game == null || _storageService.Game.Count == 0)
                 return;
 
             DateTime _lastFilterWrite = DateTime.MinValue;
             var lastReported = new List<MonitorData>();
 
-            vm.MonitorText = "Running";
-            LoggingService.Log("Monitoring service started");
+            _vm.MonitorText = "Running";
+            _loggingService.Log("Monitoring service started");
 
             try
             {
                 while (!cts.IsCancellationRequested)
                 {
-                    if (vm.IsFetching == true)
+                    // if user is fetching game database, pause monitoring
+                    if (_vm.IsFetching == true)
                     {
                         try
                         {
-                            while (vm.IsFetching && !cts.IsCancellationRequested)
+                            while (_vm.IsFetching && !cts.IsCancellationRequested)
                             {
-                                vm.MonitorText = "Paused";
+                                _vm.MonitorText = "Paused";
                                 await Task.Delay(1000, cts);
                             }
                             continue;
                         }
                         finally
                         {
-                            vm.MonitorText = "Running";
+                            _vm.MonitorText = "Running";
                         }
                     }
 
                     try
                     {
+                        // reload filter if it has changed
                         var fileInfo = new FileInfo("filter.json");
                         if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastFilterWrite)
                         {
                             _lastFilterWrite = fileInfo.LastWriteTimeUtc;
-                            var loadedFilter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
-                            StorageService.Filter = loadedFilter ?? new List<FilterData>();
+                            var loadedFilter = await _storageService.LoadConfigAsync("filter.json", new List<FilterData>());
+                            _storageService.Filter = loadedFilter ?? new List<FilterData>();
                         }
                     }
                     catch (Exception ex)
                     {
-                        LoggingService.Log($"Error loading filter.json: {ex.Message}");
+                        _loggingService.Log($"Error loading filter.json: {ex.Message}");
                     }
 
                     var runningGames = new List<MonitorData>();
@@ -104,6 +91,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                         GetWindowThreadProcessId(hWnd, out int pid);
                         try
                         {
+                            // get process executable path
                             string? path = Utilities.GetProcessExecutablePath(pid);
                             string exe;
                             if (!string.IsNullOrEmpty(path))
@@ -115,7 +103,8 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                                 path ??= "unknown";
                             }
 
-                            if (RequireFullscreen)
+                            // check if window size matches fullscreen
+                            if (_requireFullscreen)
                             {
                                 GetWindowRect(hWnd, out RECT rect);
                                 var screenWidth = SystemParameters.PrimaryScreenWidth;
@@ -125,12 +114,14 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                                     return true;
                             }
 
-                            bool isFiltered = StorageService.Filter.Any(f =>
+                            // check against user filter
+                            bool isFiltered = _storageService.Filter.Any(f =>
                                 (!string.IsNullOrEmpty(f.Title) && title.Contains(f.Title, StringComparison.OrdinalIgnoreCase)) ||
                                 (!string.IsNullOrEmpty(f.Path) && path.Contains(f.Path, StringComparison.OrdinalIgnoreCase)) ||
                                 (!string.IsNullOrEmpty(f.Executable) && exe.Contains(f.Executable, StringComparison.OrdinalIgnoreCase))
                             );
 
+                            // if it's not filtered, add it
                             if (!isFiltered)
                             {
                                 runningGames.Add(new MonitorData
@@ -143,12 +134,13 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                         }
                         catch (Exception ex)
                         {
-                            LoggingService.Log($"Error processing window {title} (pid {pid}): {ex}");
+                            _loggingService.Log($"Error processing window {title} (pid {pid}): {ex}");
                         }
 
                         return true;
                     }, IntPtr.Zero);
 
+                    // report changes
                     if (!runningGames.SequenceEqual(lastReported))
                     {
                         string status = runningGames.Count > 0
@@ -161,31 +153,31 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                         lastReported = runningGames.ToList();
                     }
 
-                    if (runningGames.Count > 0 && !OBSService.isActive)
+                    if (runningGames.Count > 0 && !_obsService.isActive)
                     {
-                        OBSService.StartBuffer();
+                        _obsService.StartBuffer();
                     }
-                    else if (runningGames.Count == 0 && OBSService.isActive)
+                    else if (runningGames.Count == 0 && _obsService.isActive)
                     {
-                        OBSService.StopBuffer();
+                        _obsService.StopBuffer();
                     }
 
                     if (!cts.IsCancellationRequested)
-                        await Task.Delay(5000);
+                        await Task.Delay(5000, cts);
                 }
             }
             catch (OperationCanceledException)
             {
-                LoggingService.Log("Monitoring service cancelled");
+                _loggingService.Log("Monitoring service cancelled");
             }
             catch (Exception ex)
             {
-                LoggingService.Log($"Monitoring service terminated with exception: {ex.Message}");
+                _loggingService.Log($"Monitoring service terminated with exception: {ex.Message}");
             }
             finally
             {
-                LoggingService.Log("Monitoring service exited");
-                vm.MonitorText = "Stopped";
+                _loggingService.Log("Monitoring service exited");
+                _vm.MonitorText = "Stopped";
             }
         }
 

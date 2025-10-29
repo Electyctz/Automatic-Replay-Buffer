@@ -88,23 +88,14 @@ namespace Automatic_Replay_Buffer.Models.Helpers
     //    }
     //}
 
-    public class TwitchService
+    public class TwitchService(LoggingService _loggingService, JsonStorageService _storageService)
     {
-        private readonly LoggingService LoggingService;
-        private readonly JsonStorageService StorageService;
-
         private string Path { get; } = "token.json";
         static string TimeRemaining = "";
 
-        public TwitchService(LoggingService _loggingService, JsonStorageService _storageService)
-        {
-            LoggingService = _loggingService;
-            StorageService = _storageService;
-        }
-
         private async Task SaveToken(TokenData token)
         {
-            await StorageService.SaveConfigAsync(Path, token);
+            await _storageService.SaveConfigAsync(Path, token);
         }
 
         private async Task<TokenData?> LoadToken()
@@ -112,7 +103,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             if (!File.Exists(Path))
                 return null;
 
-            return await StorageService.LoadConfigAsync(Path, new TokenData());
+            return await _storageService.LoadConfigAsync(Path, new TokenData());
         }
 
         public async Task<string> GetValidTokenAsync(string clientId, string clientSecret)
@@ -145,13 +136,13 @@ namespace Automatic_Replay_Buffer.Models.Helpers
 
                 await SaveToken(newToken);
 
-                LoggingService.Log("Successfully retrieved new Twitch token");
+                _loggingService.Log("Successfully retrieved new Twitch token");
 
                 return accessToken;
             }
             catch (Exception ex)
             {
-                LoggingService.Log($"Error when getting valid token: {ex.Message}");
+                _loggingService.Log($"Error when getting valid token: {ex.Message}");
                 throw;
             }
         }
@@ -161,11 +152,11 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             using var http = new HttpClient() { Timeout = TimeSpan.FromSeconds(10) };
 
             var parameters = new Dictionary<string, string>
-        {
-            { "client_id", clientId },
-            { "client_secret", clientSecret },
-            { "grant_type", "client_credentials" }
-        };
+            {
+                { "client_id", clientId },
+                { "client_secret", clientSecret },
+                { "grant_type", "client_credentials" }
+            };
             var content = new FormUrlEncodedContent(parameters);
 
             try
@@ -174,12 +165,12 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                 var json = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
 
-                LoggingService.Log("Successfully requested access token from Twitch");
+                _loggingService.Log("Successfully requested access token from Twitch");
                 return json;
             }
             catch (Exception ex)
             {
-                LoggingService.Log($"Error when authenticating with Twitch: {ex.Message}");
+                _loggingService.Log($"Error when authenticating with Twitch: {ex.Message}");
                 throw;
             }
         }

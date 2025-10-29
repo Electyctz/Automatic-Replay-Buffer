@@ -36,10 +36,11 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public event EventHandler OnRequestShowGameList;
 
-        public ICommand FetchCommand { get; }
+        public ICommand FetchDatabaseCommand { get; }
         public ICommand CancelFetchCommand { get; }
-        public ICommand ButtonCommand => IsFetching ? CancelFetchCommand : FetchCommand;
+        public ICommand DatabaseButtonCommand => IsFetching ? CancelFetchCommand : FetchDatabaseCommand;
         public ICommand AddFilterCommand { get; }
+        public ICommand TestCommand { get; }
 
         private StringBuilder _logText = new();
         public string LogText
@@ -52,30 +53,30 @@ namespace Automatic_Replay_Buffer.ViewModel
             }
         }
 
-        private int _progressValue;
-        public int ProgressValue
+        private string _databaseProgressText;
+        public string DatabaseProgressText
         {
-            get => _progressValue;
+            get => _databaseProgressText;
             set
             {
-                if (_progressValue != value)
+                if (_databaseProgressText != value)
                 {
-                    _progressValue = value;
-                    OnPropertyChanged(nameof(ProgressValue));
+                    _databaseProgressText = value;
+                    OnPropertyChanged(nameof(DatabaseProgressText));
                 }
             }
         }
 
-        private string _progressText;
-        public string ProgressText
+        private int _databaseProgressValue;
+        public int DatabaseProgressValue
         {
-            get => _progressText;
+            get => _databaseProgressValue;
             set
             {
-                if (_progressText != value)
+                if (_databaseProgressValue != value)
                 {
-                    _progressText = value;
-                    OnPropertyChanged(nameof(ProgressText));
+                    _databaseProgressValue = value;
+                    OnPropertyChanged(nameof(DatabaseProgressValue));
                 }
             }
         }
@@ -184,7 +185,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             }
         }
 
-        public string ButtonText => IsFetching ? "Cancel" : "Fetch Database";
+        public string DatabaseButtonText => IsFetching ? "Cancel" : "Fetch Database";
 
         private bool _isFetching = false;
         public bool IsFetching
@@ -196,8 +197,8 @@ namespace Automatic_Replay_Buffer.ViewModel
                 {
                     _isFetching = value;
                     OnPropertyChanged(nameof(IsFetching));
-                    OnPropertyChanged(nameof(ButtonText));
-                    OnPropertyChanged(nameof(ButtonCommand));
+                    OnPropertyChanged(nameof(DatabaseButtonText));
+                    OnPropertyChanged(nameof(DatabaseButtonCommand));
                 }
             }
         }
@@ -209,7 +210,7 @@ namespace Automatic_Replay_Buffer.ViewModel
 
             LoggingService.LogReceived += OnLogReceived;
 
-            FetchCommand = new RelayCommand(async _ =>
+            FetchDatabaseCommand = new RelayCommand(async _ =>
             {
                 ctsFetch = new CancellationTokenSource();
                 try
@@ -231,8 +232,8 @@ namespace Automatic_Replay_Buffer.ViewModel
                     {
                         StatusText = "Idle";
                         DatabaseText = (StorageService.Game?.Count ?? 0) > 0 ? "Available" : "Not Found";
-                        ProgressValue = 0;
-                        ProgressText = "";
+                        DatabaseProgressValue = 0;
+                        DatabaseProgressText = "";
                     }
                  }
             });
@@ -291,12 +292,8 @@ namespace Automatic_Replay_Buffer.ViewModel
                     LoggingService.Log($"Failed to add selected items to filter: {ex.Message}");
                 }
             });
-        }
 
-        private void OnLogReceived(string msg)
-        {
-            _logText.AppendLine(msg);
-            OnPropertyChanged(nameof(LogText));
+            TestCommand = new RelayCommand(async _ => await Test());
         }
 
         public async Task InitializeAsync()
@@ -317,10 +314,9 @@ namespace Automatic_Replay_Buffer.ViewModel
             await StartMonitoringAsync();
         }
 
-        public void SleepyTime()
+        public async Task Test()
         {
-            ctsMonitor?.Cancel();
-            ctsFetch?.Cancel();
+
         }
 
         public async Task StartMonitoringAsync()
@@ -377,7 +373,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             int totalEstimated = 341_215;
             int totalFetched = 0;
 
-            ProgressValue = 0;
+            DatabaseProgressValue = 0;
             DatabaseText = "Fetching";
             StatusText = "Fetching Database";
             LoggingService.Log("Fetching database...");
@@ -419,19 +415,31 @@ namespace Automatic_Replay_Buffer.ViewModel
                 offset += pageSize;
                 totalFetched += games.Count;
                 
-                ProgressValue = Math.Min(100, (int)((double)totalFetched / totalEstimated * 100));
-                ProgressText = $"Fetched {totalFetched}/{totalEstimated} (estimated) games...";
+                DatabaseProgressValue = Math.Min(100, (int)((double)totalFetched / totalEstimated * 100));
+                DatabaseProgressText = $"Fetched {totalFetched}/{totalEstimated} (estimated) games...";
             }
 
             await StorageService.SaveConfigAsync("games.json", allGames);
 
             StorageService.Game = allGames;
 
-            ProgressValue = 100;
-            ProgressText = $"Database fetched! {allGames.Count} games saved.";
+            DatabaseProgressValue = 100;
+            DatabaseProgressText = $"Database fetched! {allGames.Count} games saved.";
             DatabaseText = "Available";
             StatusText = "Idle";
             LoggingService.Log("Finished fetching database");
+        }
+
+        private void OnLogReceived(string msg)
+        {
+            _logText.AppendLine(msg);
+            OnPropertyChanged(nameof(LogText));
+        }
+
+        public void SleepyTime()
+        {
+            ctsMonitor?.Cancel();
+            ctsFetch?.Cancel();
         }
     }
 }

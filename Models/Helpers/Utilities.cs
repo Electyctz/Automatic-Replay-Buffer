@@ -22,7 +22,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             {
                 var category = char.GetUnicodeCategory(ch);
 
-                // common characters that cause issues
+                // common characters that cause issues, just in case
                 if (category == System.Globalization.UnicodeCategory.Control ||
                     category == System.Globalization.UnicodeCategory.Format ||
                     category == System.Globalization.UnicodeCategory.Surrogate ||

@@ -10,16 +10,14 @@ using System.Threading.Tasks;
 
 namespace Automatic_Replay_Buffer.Models.Helpers
 {
-    public class JsonStorageService
+    public class JsonStorageService(LoggingService _loggingService)
     {
-        private readonly LoggingService LoggingService;
+        private readonly LoggingService LoggingService = _loggingService;
         public ClientData Client { get; set; }
         public TokenData Token { get; set; }
         public List<GameData> Game { get; set; }
         public List<FilterData> Filter { get; set; }
         public OBSData OBS { get; set; }
-
-        public JsonStorageService(LoggingService _loggingService) => LoggingService = _loggingService;
 
         public async Task<T> LoadConfigAsync<T>(string _path, T _obj)
         {
