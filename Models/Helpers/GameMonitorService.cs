@@ -15,25 +15,25 @@ using System.Windows.Threading;
 namespace Automatic_Replay_Buffer.Models.Helpers
 {
     public class GameMonitorService(
-        LoggingService _loggingService,
-        JsonStorageService _storageService,
-        OBSService _obsService,
+        LoggingService LoggingService,
+        JsonStorageService StorageService,
+        OBSService OBSService,
         MainViewModel _vm,
-        bool _requireFullscreen = true)
+        bool RequireFullscreen = true)
     {
         public async Task MonitorGamesAsync(
             IProgress<string> statusProgress,
             IProgress<List<MonitorData>> gamesProgress,
             CancellationToken cts)
         {
-            if (_storageService?.Game == null || _storageService.Game.Count == 0)
+            if (StorageService?.Game == null || StorageService.Game.Count == 0)
                 return;
 
             DateTime _lastFilterWrite = DateTime.MinValue;
             var lastReported = new List<MonitorData>();
 
             _vm.MonitorText = "Running";
-            _loggingService.Log("Monitoring service started");
+            LoggingService.Log("Monitoring service started");
 
             try
             {
@@ -64,13 +64,13 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                         if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastFilterWrite)
                         {
                             _lastFilterWrite = fileInfo.LastWriteTimeUtc;
-                            var loadedFilter = await _storageService.LoadConfigAsync("filter.json", new List<FilterData>());
-                            _storageService.Filter = loadedFilter ?? new List<FilterData>();
+                            var loadedFilter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
+                            StorageService.Filter = loadedFilter ?? new List<FilterData>();
                         }
                     }
                     catch (Exception ex)
                     {
-                        _loggingService.Log($"Error loading filter.json: {ex.Message}");
+                        LoggingService.Log($"Error loading filter.json: {ex.Message}");
                     }
 
                     var runningGames = new List<MonitorData>();
@@ -104,7 +104,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                             }
 
                             // check if window size matches fullscreen
-                            if (_requireFullscreen)
+                            if (RequireFullscreen)
                             {
                                 GetWindowRect(hWnd, out RECT rect);
                                 var screenWidth = SystemParameters.PrimaryScreenWidth;
@@ -115,7 +115,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                             }
 
                             // check against user filter
-                            bool isFiltered = _storageService.Filter.Any(f =>
+                            bool isFiltered = StorageService.Filter.Any(f =>
                                 (!string.IsNullOrEmpty(f.Title) && title.Contains(f.Title, StringComparison.OrdinalIgnoreCase)) ||
                                 (!string.IsNullOrEmpty(f.Path) && path.Contains(f.Path, StringComparison.OrdinalIgnoreCase)) ||
                                 (!string.IsNullOrEmpty(f.Executable) && exe.Contains(f.Executable, StringComparison.OrdinalIgnoreCase))
@@ -134,7 +134,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                         }
                         catch (Exception ex)
                         {
-                            _loggingService.Log($"Error processing window {title} (pid {pid}): {ex}");
+                            LoggingService.Log($"Error processing window {title} (pid {pid}): {ex}");
                         }
 
                         return true;
@@ -153,13 +153,13 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                         lastReported = runningGames.ToList();
                     }
 
-                    if (runningGames.Count > 0 && !_obsService.isActive)
+                    if (runningGames.Count > 0 && !OBSService.isActive)
                     {
-                        _obsService.StartBuffer();
+                        OBSService.StartBuffer();
                     }
-                    else if (runningGames.Count == 0 && _obsService.isActive)
+                    else if (runningGames.Count == 0 && OBSService.isActive)
                     {
-                        _obsService.StopBuffer();
+                        OBSService.StopBuffer();
                     }
 
                     if (!cts.IsCancellationRequested)
@@ -168,15 +168,15 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             }
             catch (OperationCanceledException)
             {
-                _loggingService.Log("Monitoring service cancelled");
+                LoggingService.Log("Monitoring service cancelled");
             }
             catch (Exception ex)
             {
-                _loggingService.Log($"Monitoring service terminated with exception: {ex.Message}");
+                LoggingService.Log($"Monitoring service terminated with exception: {ex.Message}");
             }
             finally
             {
-                _loggingService.Log("Monitoring service exited");
+                LoggingService.Log("Monitoring service exited");
                 _vm.MonitorText = "Stopped";
             }
         }

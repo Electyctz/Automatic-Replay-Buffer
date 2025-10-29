@@ -296,8 +296,10 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public async Task InitializeAsync()
         {
+            TwitchService = new TwitchService(LoggingService, StorageService);
+
             StorageService.Client = await StorageService.LoadConfigAsync("client.json", new ClientData { ID = "", Secret = "" });
-            StorageService.Token = await StorageService.LoadConfigAsync("token.json", new TokenData { AccessToken = "", ExpiresIn = 0 });
+            StorageService.Token = await StorageService.LoadConfigAsync("token.json", new TokenData { AccessToken = ""});
             StorageService.Game = await StorageService.LoadConfigAsync("games.json", new List<GameData>());
             StorageService.Filter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
             StorageService.OBS = await StorageService.LoadConfigAsync("websocket.json", new OBSData { Address = "", Password = "" });
@@ -315,7 +317,16 @@ namespace Automatic_Replay_Buffer.ViewModel
         public async Task Test()
         {
             TwitchService = new TwitchService(LoggingService, StorageService);
-            string validToken = await TwitchService.GetValidTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
+            string validToken;
+
+            if (await TwitchService.AuthenticateTokenAsync())
+            {
+                validToken = StorageService.Token.AccessToken;
+            }
+            else
+            {
+                validToken = await TwitchService.GetTwitchTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
+            }
 
             LoggingService.Log($"Token: {validToken}");
         }
@@ -367,68 +378,95 @@ namespace Automatic_Replay_Buffer.ViewModel
         private async Task FetchDatabaseAsync(CancellationToken cts)
         {
             TwitchService = new TwitchService(LoggingService, StorageService);
-            string validToken = await TwitchService.GetValidTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
 
-            const int pageSize = 500;
-            int offset = 0;
-            int totalEstimated = 341_215;
-            int totalFetched = 0;
+            string token;
 
-            DatabaseProgressValue = 0;
-            DatabaseText = "Fetching";
-            StatusText = "Fetching Database";
-            LoggingService.Log("Fetching database...");
-
-            using var http = new HttpClient();
-            http.DefaultRequestHeaders.Add("Client-ID", StorageService.Client.ID);
-            http.DefaultRequestHeaders.Add("Authorization", $"Bearer {validToken}");
-
-            var allGames = new List<GameData>();
-
-            while (true)
+            if (await TwitchService.AuthenticateTokenAsync())
             {
-                cts.ThrowIfCancellationRequested();
-
-                string query = $@"
-                fields id, name, game_type;
-                where (game_type = 0 | game_type = 1 | game_type = 8 | game_type = 9 | game_type = 10 | game_type = 11);
-                limit {pageSize};
-                offset {offset};
-                sort id asc;";
-
-                var request = new HttpRequestMessage(HttpMethod.Post, "https://api.igdb.com/v4/games")
-                {
-                    Content = new StringContent(query, Encoding.UTF8, "text/plain")
-                };
-
-                var response = await RateLimitHelper.SendWithRateLimit(http, request, cts);
-
-                if (!response.IsSuccessStatusCode)
-                    break;
-
-                var json = await response.Content.ReadAsStringAsync(cts);
-                var games = JsonConvert.DeserializeObject<List<GameData>>(json);
-
-                if (games == null || games.Count == 0)
-                    break;
-
-                allGames.AddRange(games);
-                offset += pageSize;
-                totalFetched += games.Count;
-                
-                DatabaseProgressValue = Math.Min(100, (int)((double)totalFetched / totalEstimated * 100));
-                DatabaseProgressText = $"Fetched {totalFetched}/{totalEstimated} (estimated) games...";
+                token = StorageService.Token.AccessToken;
+            }
+            else
+            {
+                token = await TwitchService.GetTwitchTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
             }
 
-            await StorageService.SaveConfigAsync("games.json", allGames);
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    const int pageSize = 500;
+                    int offset = 0;
+                    int totalEstimated = 341_215;
+                    int totalFetched = 0;
 
-            StorageService.Game = allGames;
+                    DatabaseProgressValue = 0;
+                    DatabaseText = "Fetching";
+                    StatusText = "Fetching Database";
+                    LoggingService.Log("Fetching database...");
 
-            DatabaseProgressValue = 100;
-            DatabaseProgressText = $"Database fetched! {allGames.Count} games saved.";
-            DatabaseText = "Available";
-            StatusText = "Idle";
-            LoggingService.Log("Finished fetching database");
+                    using var http = new HttpClient();
+                    http.DefaultRequestHeaders.Add("Client-ID", StorageService.Client.ID);
+                    http.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+
+                    var allGames = new List<GameData>();
+
+                    while (true)
+                    {
+                        cts.ThrowIfCancellationRequested();
+
+                        string query = $@"
+                    fields id, name, game_type;
+                    where (game_type = 0 | game_type = 1 | game_type = 8 | game_type = 9 | game_type = 10 | game_type = 11);
+                    limit {pageSize};
+                    offset {offset};
+                    sort id asc;";
+
+                        var request = new HttpRequestMessage(HttpMethod.Post, "https://api.igdb.com/v4/games")
+                        {
+                            Content = new StringContent(query, Encoding.UTF8, "text/plain")
+                        };
+
+                        var response = await RateLimitHelper.SendWithRateLimit(http, request, cts);
+
+                        if (!response.IsSuccessStatusCode)
+                            break;
+
+                        var json = await response.Content.ReadAsStringAsync(cts);
+                        var games = JsonConvert.DeserializeObject<List<GameData>>(json);
+
+                        if (games == null || games.Count == 0)
+                            break;
+
+                        allGames.AddRange(games);
+                        offset += pageSize;
+                        totalFetched += games.Count;
+
+                        DatabaseProgressValue = Math.Min(100, (int)((double)totalFetched / totalEstimated * 100));
+                        DatabaseProgressText = $"Fetched {totalFetched}/{totalEstimated} (estimated) games...";
+                    }
+
+                    if (allGames.Count == 0)
+                    {
+                        LoggingService.Log("No games were fetched from the database");
+                        return;
+                    }
+
+                    await StorageService.SaveConfigAsync("games.json", allGames);
+
+                    StorageService.Game = allGames;
+
+                    DatabaseProgressValue = 100;
+                    DatabaseProgressText = $"Database fetched! {allGames.Count} games saved.";
+                    DatabaseText = "Available";
+                    StatusText = "Idle";
+                    LoggingService.Log("Finished fetching database");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Log($"Error while fetching database: {ex.Message}");
+                throw;
+            }
         }
 
         private void OnLogReceived(string msg)

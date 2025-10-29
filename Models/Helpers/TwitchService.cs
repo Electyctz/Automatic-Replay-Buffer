@@ -10,7 +10,10 @@ namespace Automatic_Replay_Buffer.Models.Helpers
 {
     public class TwitchService(LoggingService LoggingService, JsonStorageService StorageService)
     {
-        private static readonly HttpClient HttpClient = new();
+        private static readonly HttpClient HttpClient = new()
+        {
+            Timeout = TimeSpan.FromSeconds(10)
+        };
         private string TokenPath { get; } = "token.json";
 
         private async Task SaveTokenAsync(TokenData token)
@@ -59,8 +62,6 @@ namespace Automatic_Replay_Buffer.Models.Helpers
 
         public async Task<string> GetTwitchTokenAsync(string clientId, string clientSecret)
         {
-            HttpClient.Timeout = TimeSpan.FromSeconds(10);
-
             var parameters = new Dictionary<string, string>
             {
                 { "client_id", clientId },
