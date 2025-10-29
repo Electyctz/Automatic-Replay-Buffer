@@ -170,13 +170,6 @@
                     Orientation="Vertical"
                     Margin="20">
 
-            <Button Grid.Column="0"
-                    Grid.Row="1"
-                    VerticalAlignment="Bottom"
-                    Height="40"
-                    Content="Test"
-                    Command="{Binding TestCommand}" />
-
             <TextBlock HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        FontSize="18"

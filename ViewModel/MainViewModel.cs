@@ -34,11 +34,15 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public ObservableCollection<MonitorData> ActiveGames { get; private set; } = [];
 
+        private static readonly HttpClient HttpClient = new()
+        {
+            Timeout = TimeSpan.FromSeconds(10)
+        };
+
         public ICommand FetchDatabaseCommand { get; }
         public ICommand CancelFetchCommand { get; }
         public ICommand DatabaseButtonCommand => IsFetching ? CancelFetchCommand : FetchDatabaseCommand;
         public ICommand AddFilterCommand { get; }
-        public ICommand TestCommand { get; }
 
         private StringBuilder _logText = new();
         public string LogText
@@ -290,8 +294,6 @@ namespace Automatic_Replay_Buffer.ViewModel
                     LoggingService.Log($"Failed to add selected items to filter: {ex.Message}");
                 }
             });
-
-            TestCommand = new RelayCommand(async _ => await Test());
         }
 
         public async Task InitializeAsync()
@@ -312,23 +314,6 @@ namespace Automatic_Replay_Buffer.ViewModel
             OBSService.Connect(OBSData.Address, OBSData.Password);
 
             await StartMonitoringAsync();
-        }
-
-        public async Task Test()
-        {
-            TwitchService = new TwitchService(LoggingService, StorageService);
-            string validToken;
-
-            if (await TwitchService.AuthenticateTokenAsync())
-            {
-                validToken = StorageService.Token.AccessToken;
-            }
-            else
-            {
-                validToken = await TwitchService.GetTwitchTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
-            }
-
-            LoggingService.Log($"Token: {validToken}");
         }
 
         public async Task StartMonitoringAsync()
@@ -375,6 +360,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             await MonitorService.MonitorGamesAsync(statusProgress, gamesProgress, ctsMonitor.Token);
         }
 
+        // https://drive.usercontent.google.com/download?id=1EAtAtC4ln2EJxg91c34Zo3-sJoNzWuhP
         private async Task FetchDatabaseAsync(CancellationToken cts)
         {
             TwitchService = new TwitchService(LoggingService, StorageService);
