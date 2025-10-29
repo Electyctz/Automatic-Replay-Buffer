@@ -95,14 +95,25 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                         var sb = new StringBuilder(256);
                         GetWindowText(hWnd, sb, sb.Capacity);
                         string title = sb.ToString();
+
+                        // remove problematic symbols
+                        title = Utilities.NormalizeTitle(title);
+
                         if (string.IsNullOrWhiteSpace(title)) return true;
 
                         GetWindowThreadProcessId(hWnd, out int pid);
                         try
                         {
-                            var process = Process.GetProcessById(pid);
-                            string path = process.MainModule.FileName;
-                            string exe = process.ProcessName + ".exe";
+                            string? path = Utilities.GetProcessExecutablePath(pid);
+                            string exe;
+                            if (!string.IsNullOrEmpty(path))
+                                exe = Path.GetFileName(path) ?? "unknown.exe";
+                            else
+                            {
+                                try { exe = Process.GetProcessById(pid).ProcessName + ".exe"; }
+                                catch { exe = "unknown.exe"; }
+                                path ??= "unknown";
+                            }
 
                             if (RequireFullscreen)
                             {
@@ -132,7 +143,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                         }
                         catch (Exception ex)
                         {
-                            LoggingService.Log($"Error processing window {title}: {ex.Message}");
+                            LoggingService.Log($"Error processing window {title} (pid {pid}): {ex}");
                         }
 
                         return true;
