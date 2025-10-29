@@ -302,7 +302,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             StorageService.Filter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
             StorageService.OBS = await StorageService.LoadConfigAsync("websocket.json", new OBSData { Address = "", Password = "" });
 
-            TokenText = StorageService.Token is { IsExpired: false } ? "Valid" : "Invalid";
+            TokenText = await TwitchService.AuthenticateTokenAsync() ? "Valid" : "Invalid";
             DatabaseText = (StorageService.Game?.Count ?? 0) > 0 ? "Available" : "Not Found";
 
             LoggingService.Log($"Loaded database with {StorageService.Game?.Count ?? 0} entries");
@@ -314,7 +314,10 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public async Task Test()
         {
+            TwitchService = new TwitchService(LoggingService, StorageService);
+            string validToken = await TwitchService.GetValidTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
 
+            LoggingService.Log($"Token: {validToken}");
         }
 
         public async Task StartMonitoringAsync()
