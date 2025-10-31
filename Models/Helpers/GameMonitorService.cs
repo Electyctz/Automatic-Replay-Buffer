@@ -18,7 +18,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         LoggingService LoggingService,
         JsonStorageService StorageService,
         OBSService OBSService,
-        MainViewModel _vm,
+        MainViewModel vm,
         bool RequireFullscreen = true)
     {
         private readonly Dispatcher Dispatcher = System.Windows.Application.Current.Dispatcher;
@@ -34,7 +34,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             DateTime _lastFilterWrite = DateTime.MinValue;
             var lastReported = new List<MonitorData>();
 
-            Dispatcher.Invoke(() => _vm.MonitorText = "Running");
+            Dispatcher.Invoke(() => vm.MonitorState = ServiceState.Online);
             LoggingService.Log("Monitoring service started");
 
             try
@@ -179,7 +179,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             finally
             {
                 LoggingService.Log("Monitoring service exited");
-                Dispatcher.Invoke(() => _vm.MonitorText = "Stopped");
+                Dispatcher.Invoke(() => vm.MonitorState = ServiceState.Offline);
             }
         }
 

@@ -18,7 +18,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using static System.Net.WebRequestMethods;
 using Brush = System.Windows.Media.Brush;
 
 namespace Automatic_Replay_Buffer.ViewModel
@@ -44,7 +43,6 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public ICommand FetchDatabaseCommand { get; }
         public ICommand CancelFetchCommand { get; }
-        public ICommand DatabaseButtonCommand => IsFetching ? CancelFetchCommand : FetchDatabaseCommand;
         public ICommand AddFilterCommand { get; }
 
         private StringBuilder _logText = new();
@@ -58,39 +56,38 @@ namespace Automatic_Replay_Buffer.ViewModel
             }
         }
 
-        private string _databaseProgressText;
-        public string DatabaseProgressText
-        {
-            get => _databaseProgressText;
-            set
-            {
-                if (_databaseProgressText != value)
-                {
-                    _databaseProgressText = value;
-                    OnPropertyChanged(nameof(DatabaseProgressText));
-                }
-            }
-        }
+        //private string _databaseProgressText;
+        //public string DatabaseProgressText
+        //{
+        //    get => _databaseProgressText;
+        //    set
+        //    {
+        //        if (_databaseProgressText != value)
+        //        {
+        //            _databaseProgressText = value;
+        //            OnPropertyChanged(nameof(DatabaseProgressText));
+        //        }
+        //    }
+        //}
 
-        private int _databaseProgressValue;
-        public int DatabaseProgressValue
-        {
-            get => _databaseProgressValue;
-            set
-            {
-                if (_databaseProgressValue != value)
-                {
-                    _databaseProgressValue = value;
-                    OnPropertyChanged(nameof(DatabaseProgressValue));
-                }
-            }
-        }
+        //private int _databaseProgressValue;
+        //public int DatabaseProgressValue
+        //{
+        //    get => _databaseProgressValue;
+        //    set
+        //    {
+        //        if (_databaseProgressValue != value)
+        //        {
+        //            _databaseProgressValue = value;
+        //            OnPropertyChanged(nameof(DatabaseProgressValue));
+        //        }
+        //    }
+        //}
 
-        public Brush StatusBrush => StatusText switch
-        {
-            "Idle" => new SolidColorBrush(Colors.DarkOrange),
-            _ => new SolidColorBrush(Colors.Green),
-        };
+        public System.Windows.Media.Brush StatusBrush =>
+        StatusText.Equals("Idle", StringComparison.OrdinalIgnoreCase)
+        ? new SolidColorBrush(Colors.DarkOrange)
+        : new SolidColorBrush(Colors.Green);
         private string _statusText = "Idle";
         public string StatusText
         {
@@ -106,107 +103,56 @@ namespace Automatic_Replay_Buffer.ViewModel
             }
         }
 
-        public Brush WebsocketBrush => WebsocketText switch
+        private ServiceState _websocketState = ServiceState.Offline;
+        public ServiceState WebsocketState
         {
-            "Connected" => new SolidColorBrush(Colors.Green),
-            "Connecting" => new SolidColorBrush(Colors.DarkOrange),
-            _ => new SolidColorBrush(Colors.Red),
-        };
-        private string _websocketText = "Disconnected";
-        public string WebsocketText
-        {
-            get => _websocketText;
+            get => _websocketState;
             set
             {
-                if (_websocketText != value)
+                if (_websocketState != value)
                 {
-                    _websocketText = value;
+                    _websocketState = value;
                     OnPropertyChanged(nameof(WebsocketText));
                     OnPropertyChanged(nameof(WebsocketBrush));
                 }
             }
         }
+        public string WebsocketText => ServiceStatus.GetText("Websocket", WebsocketState);
+        public Brush WebsocketBrush => ServiceStatus.GetBrush(WebsocketState);
 
-        public Brush MonitorBrush => MonitorText switch
+        private ServiceState _monitorState = ServiceState.Offline;
+        public ServiceState MonitorState
         {
-            "Running" => new SolidColorBrush(Colors.Green),
-            "Paused" => new SolidColorBrush(Colors.DarkOrange),
-            _ => new SolidColorBrush(Colors.Red),
-        };
-        private string _monitorText = "Not Running";
-        public string MonitorText
-        {
-            get => _monitorText;
+            get => _monitorState;
             set
             {
-                if (_monitorText != value)
+                if (_monitorState != value)
                 {
-                    _monitorText = value;
+                    _monitorState = value;
                     OnPropertyChanged(nameof(MonitorText));
                     OnPropertyChanged(nameof(MonitorBrush));
                 }
             }
         }
+        public string MonitorText => ServiceStatus.GetText("Monitor", MonitorState);
+        public Brush MonitorBrush => ServiceStatus.GetBrush(MonitorState);
 
-        public Brush TokenBrush => TokenText switch
+        private ServiceState _databaseState = ServiceState.Offline;
+        public ServiceState DatabaseState
         {
-            "Valid" => new SolidColorBrush(Colors.Green),
-            "Fetching" => new SolidColorBrush(Colors.DarkOrange),
-            _ => new SolidColorBrush(Colors.Red),
-        };
-        private string _tokenText = "Invalid";
-        public string TokenText
-        {
-            get => _tokenText;
+            get => _databaseState;
             set
             {
-                if (_tokenText != value)
+                if (_databaseState != value)
                 {
-                    _tokenText = value;
-                    OnPropertyChanged(nameof(TokenText));
-                    OnPropertyChanged(nameof(TokenBrush));
-                }
-            }
-        }
-
-        public Brush DatabaseBrush => DatabaseText switch
-        {
-            "Available" => new SolidColorBrush(Colors.Green),
-            "Fetching" => new SolidColorBrush(Colors.DarkOrange),
-            _ => new SolidColorBrush(Colors.Red),
-        };
-        private string _databaseText = "Not Found";
-        public string DatabaseText
-        {
-            get => _databaseText;
-            set
-            {
-                if (_databaseText != value)
-                {
-                    _databaseText = value;
+                    _databaseState = value;
                     OnPropertyChanged(nameof(DatabaseText));
                     OnPropertyChanged(nameof(DatabaseBrush));
                 }
             }
         }
-
-        public string DatabaseButtonText => IsFetching ? "Cancel" : "Fetch Database";
-
-        private bool _isFetching = false;
-        public bool IsFetching
-        {
-            get => _isFetching;
-            set
-            {
-                if (_isFetching != value)
-                {
-                    _isFetching = value;
-                    OnPropertyChanged(nameof(IsFetching));
-                    OnPropertyChanged(nameof(DatabaseButtonText));
-                    OnPropertyChanged(nameof(DatabaseButtonCommand));
-                }
-            }
-        }
+        public string DatabaseText => ServiceStatus.GetText("Database", DatabaseState);
+        public Brush DatabaseBrush => ServiceStatus.GetBrush(DatabaseState);
         #endregion
 
         public MainViewModel()
@@ -303,20 +249,20 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public async Task InitializeAsync()
         {
-            StorageService.Client = await StorageService.LoadConfigAsync("client.json", new ClientData { ID = "", Secret = "" });
-            StorageService.Token = await StorageService.LoadConfigAsync("token.json", new TokenData { AccessToken = ""});
             StorageService.Filter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
             StorageService.OBS = await StorageService.LoadConfigAsync("websocket.json", new OBSData { Address = "", Password = "" });
 
-            TokenText = await TwitchService.AuthenticateTokenAsync() ? "Valid" : "Invalid";
-
             OBSService.Connect(OBSData.Address, OBSData.Password);
 
-            LoggingService.Log("Loading game database...");
-            StorageService.Game = await DownloadDatabaseAsync();
-            DatabaseText = (StorageService.Game?.Count ?? 0) > 0 ? "Available" : "Not Found";
-            LoggingService.Log($"Loaded game database with {StorageService.Game?.Count ?? 0} entries");
+            LoggingService.Log("Starting game monitoring service...");
+            MonitorState = ServiceState.Busy;
 
+            LoggingService.Log("Loading game database...");
+            DatabaseState = ServiceState.Busy;
+
+            StorageService.Game = await DownloadDatabaseAsync();
+            DatabaseState = (StorageService.Game?.Count ?? 0) > 0 ? ServiceState.Online : ServiceState.Offline;
+            LoggingService.Log($"Loaded game database with {StorageService.Game?.Count ?? 0} entries");
             await StartMonitoringAsync();
         }
 

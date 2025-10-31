@@ -46,7 +46,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
 
             if (!string.IsNullOrEmpty(address) && !string.IsNullOrEmpty(password) && !OBSWebsocket.IsConnected)
             {
-                vm.WebsocketText = "Connecting";
+                vm.WebsocketState = ServiceState.Busy;
                 LoggingService.Log("Attempting to connect to WebSocket...");
 
                 Task.Run(() =>
@@ -57,7 +57,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                     }
                     catch (Exception ex)
                     {
-                        vm.WebsocketText = "Disconnected";
+                        vm.WebsocketState = ServiceState.Offline;
                         LoggingService.Log($"Error when connecting to OBS WebSocket: {ex.Message}");
                     }
                 });
@@ -68,7 +68,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         {
             Dispatcher.Invoke(() =>
             {
-                vm.WebsocketText = "Connected";
+                vm.WebsocketState = ServiceState.Online;
             });
 
             isActive = OBSWebsocket.GetReplayBufferStatus();
@@ -79,7 +79,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         {
             Dispatcher.Invoke(() =>
             {
-                vm.WebsocketText = "Disconnected";
+                vm.WebsocketState = ServiceState.Offline;
             });
 
             isActive = false;

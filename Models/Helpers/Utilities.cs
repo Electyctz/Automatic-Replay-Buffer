@@ -11,7 +11,6 @@ namespace Automatic_Replay_Buffer.Models.Helpers
 {
     public class Utilities
     {
-
         // cleans up window titles by removing problematic characters
         public static string NormalizeTitle(string title)
         {

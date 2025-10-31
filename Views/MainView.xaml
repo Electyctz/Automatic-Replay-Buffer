@@ -7,8 +7,8 @@
         d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
         mc:Ignorable="d"
         Title="Automatic Replay Buffer"
-        Height="410"
-        Width="348"
+        Height="350"
+        Width="730"
         SizeToContent="WidthAndHeight"
         ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen"
@@ -20,11 +20,11 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="348" />
+            <ColumnDefinition Width="382" />
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="60" />
-            <RowDefinition Height="60" />
+            <RowDefinition Height="65" />
             <RowDefinition Height="60" />
             <RowDefinition Height="60" />
             <RowDefinition Height="60" />
@@ -32,7 +32,7 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0"
-              Margin="10,9,10,11">
+              Margin="10,15,10,11">
 
             <TextBlock Text="Websocket"
                        HorizontalAlignment="Left"
@@ -68,10 +68,10 @@
 
         <Separator Grid.Row="0"
                    VerticalAlignment="Bottom"
-                   Margin="10,10,10,0" />
+                   Margin="20,10,20,0" />
 
         <Grid Grid.Row="1"
-              Margin="10,9,10,11">
+              Margin="10,10,10,11">
 
             <TextBlock Text="Monitor"
                        HorizontalAlignment="Left"
@@ -107,49 +107,10 @@
 
         <Separator Grid.Row="1"
                    VerticalAlignment="Bottom"
-                   Margin="10,10,10,0" />
+                   Margin="20,10,20,0" />
 
         <Grid Grid.Row="2"
-              Margin="10,9,10,11">
-
-            <TextBlock Text="Token"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Center"
-                       FontSize="18"
-                       Margin="10" />
-
-            <Border Grid.Row="0"
-                    HorizontalAlignment="Right"
-                    BorderBrush="LightGray"
-                    BorderThickness="1"
-                    CornerRadius="10"
-                    Margin="0,5,10,5">
-
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-
-                    <Rectangle Width="2"
-                               Height="20"
-                               Fill="{Binding TokenBrush}"
-                               Margin="10,0,10,0" />
-
-                    <TextBlock Text="{Binding TokenText}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontSize="18"
-                               Margin="0,0,10,0"
-                               Foreground="Black" />
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Separator Grid.Row="2"
-                   VerticalAlignment="Bottom"
-                   Margin="10,10,10,0" />
-
-        <Grid Grid.Row="3"
-              Margin="10,9,10,11">
+              Margin="10,10,10,11">
 
             <TextBlock Text="Database"
                        HorizontalAlignment="Left"
@@ -183,12 +144,12 @@
             </Border>
         </Grid>
 
-        <Separator Grid.Row="3"
+        <Separator Grid.Row="2"
                    VerticalAlignment="Bottom"
-                   Margin="10,10,10,0" />
+                   Margin="20,10,20,0" />
 
-        <Grid Grid.Row="4"
-              Margin="10,9,10,11">
+        <Grid Grid.Row="3"
+              Margin="10,10,10,11">
 
             <TextBlock Text="Status"
                        HorizontalAlignment="Left"
@@ -222,16 +183,26 @@
             </Border>
         </Grid>
 
-        <Separator Grid.Row="4"
+        <Separator Grid.Row="3"
                    VerticalAlignment="Bottom"
-                   Margin="10,10,10,0" />
+                   Margin="20,10,20,0" />
 
-        <Button Grid.Row="5"
+        <Button Grid.Row="4"
                 Content="Settings"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 FontSize="18"
                 Margin="20" />
+
+        <TextBox x:Name="LogBox"
+                 Grid.Column="1"
+                 Grid.Row="0"
+                 Grid.RowSpan="5"
+                 IsReadOnly="True"
+                 Text="{Binding LogText, Mode=OneWay}"
+                 TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto"
+                 Margin="0,20,20,20" />
 
         <!--<ListView Grid.Column="1"
                   Grid.Row="0"
