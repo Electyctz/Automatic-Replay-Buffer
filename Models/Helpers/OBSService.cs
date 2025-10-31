@@ -19,6 +19,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         private readonly OBSWebsocket OBSWebsocket = new();
         private readonly MainViewModel vm;
         private readonly Dispatcher Dispatcher = System.Windows.Application.Current.Dispatcher;
+
         public bool isActive;
 
         private string? _address;

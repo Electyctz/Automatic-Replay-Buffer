@@ -23,11 +23,11 @@ using Automatic_Replay_Buffer.Views;
 
 namespace Automatic_Replay_Buffer
 {
-    public partial class MainWindow : Window
+    public partial class MainView : Window
     {
         private readonly NotifyIcon _notifyIcon;
 
-        public MainWindow()
+        public MainView()
         {
             InitializeComponent();
 

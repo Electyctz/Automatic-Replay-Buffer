@@ -21,6 +21,8 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         MainViewModel _vm,
         bool RequireFullscreen = true)
     {
+        private readonly Dispatcher Dispatcher = System.Windows.Application.Current.Dispatcher;
+
         public async Task MonitorGamesAsync(
             IProgress<string> statusProgress,
             IProgress<List<MonitorData>> gamesProgress,
@@ -32,7 +34,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             DateTime _lastFilterWrite = DateTime.MinValue;
             var lastReported = new List<MonitorData>();
 
-            _vm.MonitorText = "Running";
+            Dispatcher.Invoke(() => _vm.MonitorText = "Running");
             LoggingService.Log("Monitoring service started");
 
             try
@@ -177,7 +179,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             finally
             {
                 LoggingService.Log("Monitoring service exited");
-                _vm.MonitorText = "Stopped";
+                Dispatcher.Invoke(() => _vm.MonitorText = "Stopped");
             }
         }
 
