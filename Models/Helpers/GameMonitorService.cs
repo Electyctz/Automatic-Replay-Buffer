@@ -15,14 +15,23 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Automatic_Replay_Buffer.Models.Helpers
 {
-    public class GameMonitorService(
-        LoggingService LoggingService,
-        JsonStorageService StorageService,
-        OBSService OBSService,
-        MainViewModel vm,
-        bool RequireFullscreen = true)
+    public class GameMonitorService
     {
+        private readonly LoggingService LoggingService;
+        private readonly JsonStorageService StorageService;
+        private readonly OBSService OBSService;
+        private readonly MainViewModel vm;
         private readonly Dispatcher Dispatcher = System.Windows.Application.Current.Dispatcher;
+        private readonly bool RequireFullscreen;
+
+        public GameMonitorService(LoggingService _LoggingService, JsonStorageService _StorageService, OBSService _OBSService, MainViewModel _vm, bool _RequireFullscreen)
+        {
+            LoggingService = _LoggingService;
+            StorageService = _StorageService;
+            OBSService = _OBSService;
+            vm = _vm;
+            RequireFullscreen = _RequireFullscreen;
+        }
 
         public async Task MonitorGamesAsync(
             IProgress<string> statusProgress,
@@ -61,12 +70,19 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                     try
                     {
                         // reload filter if it has changed
-                        var fileInfo = new FileInfo("filter.json");
+
+                        //var fileInfo = new FileInfo("filter.json");
+                        //if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastFilterWrite)
+                        //{
+                        //    _lastFilterWrite = fileInfo.LastWriteTimeUtc;
+                        //    var loadedFilter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
+                        //    StorageService.Filter = loadedFilter ?? new List<FilterData>();
+                        //}
+                        var fileInfo = new FileInfo("settings.json");
                         if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastFilterWrite)
                         {
                             _lastFilterWrite = fileInfo.LastWriteTimeUtc;
-                            var loadedFilter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
-                            StorageService.Filter = loadedFilter ?? new List<FilterData>();
+                            await StorageService.LoadAsync("settings.json");
                         }
                     }
                     catch (Exception ex)
@@ -116,7 +132,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                             }
 
                             // check against user filter
-                            bool isFiltered = StorageService.Filter.Any(f =>
+                            bool isFiltered = (StorageService.Filter ?? Enumerable.Empty<FilterData>()) .Any(f =>
                                 (!string.IsNullOrEmpty(f.Title) && title.Contains(f.Title, StringComparison.OrdinalIgnoreCase)) ||
                                 (!string.IsNullOrEmpty(f.Path) && path.Contains(f.Path, StringComparison.OrdinalIgnoreCase)) ||
                                 (!string.IsNullOrEmpty(f.Executable) && exe.Contains(f.Executable, StringComparison.OrdinalIgnoreCase))
