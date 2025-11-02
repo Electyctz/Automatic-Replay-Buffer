@@ -7,8 +7,8 @@
              xmlns:viewmodel="clr-namespace:Automatic_Replay_Buffer.ViewModel"
              d:DataContext="{d:DesignInstance Type=viewmodel:HomeViewModel}"
              mc:Ignorable="d"
-             d:DesignHeight="350"
              d:DesignWidth="730"
+             d:DesignHeight="335"
              Background="White">
 
     <Grid>
