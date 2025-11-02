@@ -33,7 +33,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             RequireFullscreen = _RequireFullscreen;
         }
 
-        public async Task MonitorGamesAsync( IProgress<string> statusProgress, IProgress<List<MonitorData>> gamesProgress, CancellationToken cts)
+        public async Task MonitorGamesAsync(IProgress<string> statusProgress, IProgress<List<MonitorData>> gamesProgress, CancellationToken cts)
         {
             if (StorageService?.Game == null || StorageService.Game.Count == 0)
                 return;

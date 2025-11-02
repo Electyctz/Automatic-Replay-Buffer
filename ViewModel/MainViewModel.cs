@@ -34,7 +34,7 @@ namespace Automatic_Replay_Buffer.ViewModel
         public OBSData OBSData => StorageService.OBS;
         public LoggingService LoggingService { get; } = new();
 
-        public ObservableCollection<MonitorData> ActiveGames { get; private set; } = new();
+        public ObservableCollection<MonitorData> ActiveGames { get; } = new ObservableCollection<MonitorData>();
 
         private static readonly HttpClient HttpClient = new()
         {
@@ -274,14 +274,14 @@ namespace Automatic_Replay_Buffer.ViewModel
                 }
                 else
                 {
-                    title = FilterTitle;
-                    path = FilterPath;
-                    exe = FilterExecutable;
+                    title = FilterTitle?.Trim() ?? string.Empty;
+                    path = FilterPath?.Trim() ?? string.Empty;
+                    exe = FilterExecutable?.Trim() ?? string.Empty;
                 }
 
                 if (Utilities.FilterExists(StorageService.Filter, title, path, exe))
                 {
-                    return;
+                    return; 
                 }
 
                 StorageService.Filter.Add(new FilterData
@@ -291,7 +291,7 @@ namespace Automatic_Replay_Buffer.ViewModel
                     Executable = exe
                 });
 
-                if (!(obj is MonitorData))
+                if (obj is not MonitorData)
                     FilterTitle = FilterPath = FilterExecutable = string.Empty;
 
                 await StorageService.SaveAsync("settings.json");
