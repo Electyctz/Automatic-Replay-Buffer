@@ -149,7 +149,8 @@
 
                     <TextBox HorizontalAlignment="Stretch"
                              VerticalAlignment="Center"
-                             FontSize="16" />
+                             FontSize="16"
+                             Text="{Binding FilterTitle, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
 
                 <StackPanel Orientation="Vertical"
@@ -163,7 +164,8 @@
 
                     <TextBox HorizontalAlignment="Stretch"
                              VerticalAlignment="Center"
-                             FontSize="16" />
+                             FontSize="16"
+                             Text="{Binding FilterPath, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
 
                 <StackPanel Orientation="Vertical"
@@ -177,7 +179,8 @@
 
                     <TextBox HorizontalAlignment="Stretch"
                              VerticalAlignment="Center"
-                             FontSize="16" />
+                             FontSize="16"
+                             Text="{Binding FilterExecutable, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
 
                 <Button Content="Add"
