@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Automatic_Replay_Buffer.ViewModel
 {
-    internal class ListViewModel
+    internal class FilterListViewModel
     {
     }
 }

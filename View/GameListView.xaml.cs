@@ -15,9 +15,9 @@ using System.Windows.Shapes;
 
 namespace Automatic_Replay_Buffer.View
 {
-    public partial class ListView : System.Windows.Controls.UserControl
+    public partial class GameListView : System.Windows.Controls.UserControl
     {
-        public ListView()
+        public GameListView()
         {
             InitializeComponent();
         }
