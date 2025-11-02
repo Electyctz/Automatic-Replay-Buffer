@@ -239,12 +239,12 @@ namespace Automatic_Replay_Buffer.ViewModel
         {
             await StorageService.LoadAsync();
 
-            OBSAddress = StorageService.OBS.Address;
-            OBSPassword = StorageService.OBS.Password;
-
             StartWithWindows = StorageService.Settings.StartWithWindows;
             MinimizeToTray = StorageService.Settings.MinimizeToTray;
             StartMinimized = StorageService.Settings.StartMinimized;
+
+            OBSAddress = StorageService.OBS.Address;
+            OBSPassword = StorageService.OBS.Password;
 
             LoggingService.Log("Starting game monitoring service...");
             MonitorState = ServiceState.Busy;

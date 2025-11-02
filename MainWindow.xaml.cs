@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Application = System.Windows.Application;
 
 namespace Automatic_Replay_Buffer
@@ -37,6 +38,7 @@ namespace Automatic_Replay_Buffer
                 Text = "Automatic Replay Buffer",
                 ContextMenuStrip = new ContextMenuStrip()
             };
+
             _notifyIcon.ContextMenuStrip.Items.Add("Open", null, (s, e) => ShowWindow());
             _notifyIcon.ContextMenuStrip.Items.Add("Exit", null, (s, e) => Application.Current.Shutdown());
 
@@ -69,12 +71,6 @@ namespace Automatic_Replay_Buffer
                     Hide();
                 }
             }
-        }
-
-        private void HideWindow()
-        {
-            WindowState = WindowState.Minimized;
-            Hide();
         }
 
         private void ShowWindow()

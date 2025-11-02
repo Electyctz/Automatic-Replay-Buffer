@@ -5,6 +5,7 @@
              xmlns:viewmodel="clr-namespace:Automatic_Replay_Buffer.ViewModel"
              xmlns:view="clr-namespace:Automatic_Replay_Buffer.View"
              StartupUri="MainWindow.xaml">
+    
     <Application.Resources>
         <ResourceDictionary>
 
