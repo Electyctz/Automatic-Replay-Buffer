@@ -26,9 +26,9 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         private string? _address;
         private string? _password;
 
-        public OBSService(LoggingService _loggingService, MainViewModel _vm)
+        public OBSService(LoggingService _LoggingService, MainViewModel _vm)
         {
-            LoggingService = _loggingService;
+            LoggingService = _LoggingService;
             vm = _vm;
 
             OBSWebsocket.Connected += Obs_Connected;
