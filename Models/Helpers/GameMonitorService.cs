@@ -33,10 +33,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             RequireFullscreen = _RequireFullscreen;
         }
 
-        public async Task MonitorGamesAsync(
-            IProgress<string> statusProgress,
-            IProgress<List<MonitorData>> gamesProgress,
-            CancellationToken cts)
+        public async Task MonitorGamesAsync( IProgress<string> statusProgress, IProgress<List<MonitorData>> gamesProgress, CancellationToken cts)
         {
             if (StorageService?.Game == null || StorageService.Game.Count == 0)
                 return;
@@ -58,7 +55,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                             if (Process.GetProcessesByName("obs64").Length > 0 ||
                                 Process.GetProcessesByName("obs32").Length > 0)
                             {
-                                OBSService.Connect(StorageService.OBS.Address, StorageService.OBS.Password);
+                                OBSService.Connect("ws://" + StorageService.OBS.Address, StorageService.OBS.Password);
                             }
 
                             statusProgress?.Report("Idle");
@@ -70,14 +67,6 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                     try
                     {
                         // reload filter if it has changed
-
-                        //var fileInfo = new FileInfo("filter.json");
-                        //if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastFilterWrite)
-                        //{
-                        //    _lastFilterWrite = fileInfo.LastWriteTimeUtc;
-                        //    var loadedFilter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
-                        //    StorageService.Filter = loadedFilter ?? new List<FilterData>();
-                        //}
                         var fileInfo = new FileInfo("settings.json");
                         if (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastFilterWrite)
                         {

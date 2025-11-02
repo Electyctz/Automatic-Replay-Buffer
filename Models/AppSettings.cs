@@ -11,5 +11,8 @@ namespace Automatic_Replay_Buffer.Models
     {
         public ObservableCollection<FilterData> Filter { get; set; } = new();
         public OBSData OBS { get; set; } = new();
+        public bool StartWithWindows { get; set; } = false;
+        public bool MinimizeToTray { get; set; } = true;
+        public bool StartMinimized { get; set; } = false;
     }
 }
