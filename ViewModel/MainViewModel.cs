@@ -139,6 +139,27 @@ namespace Automatic_Replay_Buffer.ViewModel
         }
         public string DatabaseText => ServiceStatus.GetText("Database", DatabaseState);
         public Brush DatabaseBrush => ServiceStatus.GetBrush(DatabaseState);
+
+        private string _titleText;
+        public string TitleText
+        {
+            get => _titleText;
+            set { _titleText = value; OnPropertyChanged(); }
+        }
+
+        private string _pathText;
+        public string PathText
+        {
+            get => _pathText;
+            set { _pathText = value; OnPropertyChanged(); }
+        }
+
+        private string _executableText;
+        public string ExecutableText
+        {
+            get => _executableText;
+            set { _executableText = value; OnPropertyChanged(); }
+        }
         #endregion
 
         public MainViewModel()
@@ -162,56 +183,58 @@ namespace Automatic_Replay_Buffer.ViewModel
                 CurrentView = SettingsVM;
             });
 
-            AddFilterCommand = new RelayCommand(async obj =>
-            {
-                if (obj is not IList selectedItems) return;
+            //AddFilterCommand = new RelayCommand(async obj =>
+            //{
+            //    if (obj is not IList selectedItems) return;
 
-                try
-                {
-                    bool changed = false;
+            //    try
+            //    {
+            //        bool changed = false;
 
-                    foreach (var item in selectedItems.Cast<MonitorData>())
-                    {
-                        bool exists = StorageService.Filter.Any(f =>
-                            (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase)) ||
-                            (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase)) ||
-                            (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(item.Executable, StringComparison.OrdinalIgnoreCase))
-                        );
+            //        foreach (var item in selectedItems.Cast<MonitorData>())
+            //        {
+            //            bool exists = StorageService.Filter.Any(f =>
+            //                (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase)) ||
+            //                (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase)) ||
+            //                (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(item.Executable, StringComparison.OrdinalIgnoreCase))
+            //            );
 
-                        if (!exists)
-                        {
-                            StorageService.Filter.Add(new FilterData
-                            {
-                                Title = item.Title,
-                                Path = item.Path,
-                                Executable = item.Executable
-                            });
-                            changed = true;
-                        }
-                    }
+            //            if (!exists)
+            //            {
+            //                StorageService.Filter.Add(new FilterData
+            //                {
+            //                    Title = item.Title,
+            //                    Path = item.Path,
+            //                    Executable = item.Executable
+            //                });
+            //                changed = true;
+            //            }
+            //        }
 
-                    if (changed)
-                    {
-                        await StorageService.SaveAsync("settings.json");
+            //        if (changed)
+            //        {
+            //            await StorageService.SaveAsync("settings.json");
 
-                        foreach (var item in selectedItems.Cast<MonitorData>().ToList())
-                        {
-                            bool isFiltered = StorageService.Filter.Any(f =>
-                                (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase)) ||
-                                (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase)) ||
-                                (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(item.Executable, StringComparison.OrdinalIgnoreCase))
-                            );
+            //            foreach (var item in selectedItems.Cast<MonitorData>().ToList())
+            //            {
+            //                bool isFiltered = StorageService.Filter.Any(f =>
+            //                    (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase)) ||
+            //                    (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase)) ||
+            //                    (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(item.Executable, StringComparison.OrdinalIgnoreCase))
+            //                );
 
-                            if (isFiltered)
-                                ActiveGames.Remove(item);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LoggingService.Log($"Failed to add selected items to filter: {ex.Message}");
-                }
-            });
+            //                if (isFiltered)
+            //                    ActiveGames.Remove(item);
+            //            }
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        LoggingService.Log($"Failed to add selected items to filter: {ex.Message}");
+            //    }
+            //});
+
+            AddFilterCommand = new RelayCommand(async obj => await AddFilterAsync(obj));
         }
 
         public async Task InitializeAsync()
@@ -228,6 +251,52 @@ namespace Automatic_Replay_Buffer.ViewModel
             DatabaseState = (StorageService.Game?.Count ?? 0) > 0 ? ServiceState.Online : ServiceState.Offline;
             LoggingService.Log($"Loaded game database with {StorageService.Game?.Count ?? 0} entries");
             await StartMonitoringAsync();
+        }
+
+        private async Task AddFilterAsync(object obj)
+        {
+            try
+            {
+                bool changed = false;
+
+                if (obj is IList selectedItems)
+                {
+                    foreach (var item in selectedItems.Cast<MonitorData>())
+                    {
+                        if (Utilities.FilterExists(StorageService.Filter, item.Title, item.Path, item.Executable))
+                            changed = true;
+                    }
+                }
+                else if (!string.IsNullOrWhiteSpace(TitleText) ||
+                         !string.IsNullOrWhiteSpace(PathText) ||
+                         !string.IsNullOrWhiteSpace(ExecutableText))
+                {
+                    if (Utilities.FilterExists(StorageService.Filter, TitleText, PathText, ExecutableText))
+                    {
+                        changed = true;
+                        TitleText = PathText = ExecutableText = string.Empty;
+                    }
+                }
+
+                if (!changed)
+                    return;
+
+                await StorageService.SaveAsync("settings.json");
+
+                var toRemove = ActiveGames
+                    .Where(g => StorageService.Filter.Any(f =>
+                        (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(g.Title, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(g.Path, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(g.Executable, StringComparison.OrdinalIgnoreCase))))
+                    .ToList();
+
+                foreach (var game in toRemove)
+                    ActiveGames.Remove(game);
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Log($"Failed to add filter: {ex.Message}");
+            }
         }
 
         public async Task<List<GameData>> DownloadDatabaseAsync()

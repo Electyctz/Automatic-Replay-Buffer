@@ -8,7 +8,7 @@
         d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
         mc:Ignorable="d"
         Title="Automatic Replay Buffer"
-        Width="730"
+        Width="732"
         Height="335"
         SizeToContent="WidthAndHeight"
         ResizeMode="CanMinimize"

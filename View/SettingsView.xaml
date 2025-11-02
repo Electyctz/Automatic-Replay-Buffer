@@ -7,15 +7,15 @@
              xmlns:viewmodel="clr-namespace:Automatic_Replay_Buffer.ViewModel"
              d:DataContext="{d:DesignInstance Type=viewmodel:SettingsViewModel}"
              mc:Ignorable="d"
-             d:DesignWidth="730"
+             d:DesignWidth="732"
              d:DesignHeight="335"
              Background="White">
     
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="243" />
             <ColumnDefinition Width="244" />
-            <ColumnDefinition Width="243" />
+            <ColumnDefinition Width="244" />
+            <ColumnDefinition Width="244" />
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
@@ -185,13 +185,10 @@
                         VerticalAlignment="Bottom"
                         Width="70"
                         FontSize="16"
-                        Margin="0,29,0,0"/>
+                        Margin="0,29,0,0" 
+                        Command="{Binding AddFilterCommand}"/>
+                
             </StackPanel>
         </Border>
-
-        <!--<Button Content="Back"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Command="{Binding HomeViewCommand}"/>-->
     </Grid>
 </UserControl>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -59,6 +60,29 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             {
                 CloseHandle(h);
             }
+        }
+
+        // GameMonitorService filter check and addition
+        public static bool FilterExists(ObservableCollection<FilterData> filterCollection, string title, string path, string executable)
+        {
+            ArgumentNullException.ThrowIfNull(filterCollection);
+
+            bool exists = filterCollection.Any(f =>
+                (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(title, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(path, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(executable, StringComparison.OrdinalIgnoreCase)));
+
+            if (exists)
+                return false;
+
+            filterCollection.Add(new FilterData
+            {
+                Title = title,
+                Path = path,
+                Executable = executable
+            });
+
+            return true;
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]

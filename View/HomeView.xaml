@@ -7,14 +7,14 @@
              xmlns:viewmodel="clr-namespace:Automatic_Replay_Buffer.ViewModel"
              d:DataContext="{d:DesignInstance Type=viewmodel:HomeViewModel}"
              mc:Ignorable="d"
-             d:DesignWidth="730"
+             d:DesignWidth="732"
              d:DesignHeight="335"
              Background="White">
 
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="348" />
-            <ColumnDefinition Width="382" />
+            <ColumnDefinition Width="384" />
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>

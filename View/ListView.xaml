@@ -5,12 +5,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Automatic_Replay_Buffer.View"
              mc:Ignorable="d"
-             d:DesignWidth="730"
+             d:DesignWidth="732"
              d:DesignHeight="335"
              Background="White">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="730" />
+            <ColumnDefinition Width="732" />
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
