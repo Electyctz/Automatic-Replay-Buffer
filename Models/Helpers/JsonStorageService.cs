@@ -10,46 +10,49 @@ using System.Threading.Tasks;
 
 namespace Automatic_Replay_Buffer.Models.Helpers
 {
-    public class JsonStorageService(LoggingService _loggingService)
+    public class JsonStorageService
     {
-        private readonly LoggingService LoggingService = _loggingService;
+        private readonly LoggingService LoggingService;
+        public AppSettings Settings { get; private set; } = new();
+        public List<FilterData> Filter => Settings.Filter ??= new List<FilterData>();
+        public OBSData OBS => Settings.OBS;
         public List<GameData> Game { get; set; } = new();
-        public List<FilterData> Filter { get; set; } = new();
-        public OBSData OBS { get; set; } = new();
 
-        public async Task<T> LoadConfigAsync<T>(string _path, T _obj)
+        public JsonStorageService(LoggingService _LoggingService)
         {
+            LoggingService = _LoggingService;
+        }
+
+        public async Task LoadAsync(string path = "settings.json")
+        {
+            if (!File.Exists(path))
+            {
+                await SaveAsync(path);
+                return;
+            }
+
             try
             {
-                if (!File.Exists(_path))
-                {
-                    await SaveConfigAsync(_path, _obj).ConfigureAwait(false);
-                    return _obj;
-                }
-
-                string json = await File.ReadAllTextAsync(_path).ConfigureAwait(false);
-
-                T result = await Task.Run(() => JsonConvert.DeserializeObject<T>(json));
-                return result;
+                var json = await File.ReadAllTextAsync(path);
+                Settings = JsonConvert.DeserializeObject<AppSettings>(json) ?? new AppSettings();
             }
             catch (Exception ex)
             {
-                LoggingService.Log($"Error while reading file \"{_path}\": {ex.Message}");
-                throw;
+                LoggingService.Log($"Failed to load settings: {ex.Message}");
+                Settings = new AppSettings();
             }
         }
 
-        public async Task SaveConfigAsync<T>(string _path, T _obj)
+        public async Task SaveAsync(string path = "settings.json")
         {
             try
             {
-                string json = await Task.Run(() => JsonConvert.SerializeObject(_obj, Formatting.Indented));
-
-                await File.WriteAllTextAsync(_path, json).ConfigureAwait(false);
+                var json = JsonConvert.SerializeObject(Settings, Formatting.Indented);
+                await File.WriteAllTextAsync(path, json);
             }
             catch (Exception ex)
             {
-                LoggingService.Log($"Error while writing to file \"{_path}\": {ex.Message}");
+                LoggingService.Log($"Failed to save settings: {ex.Message}");
             }
         }
     }
