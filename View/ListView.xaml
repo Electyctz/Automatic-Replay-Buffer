@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="Automatic_Replay_Buffer.View.ListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Automatic_Replay_Buffer.View"
+             mc:Ignorable="d"
+             d:DesignWidth="730"
+             d:DesignHeight="335"
+             Background="White">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="730" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="335" />
+        </Grid.RowDefinitions>
+    </Grid>
+</UserControl>
