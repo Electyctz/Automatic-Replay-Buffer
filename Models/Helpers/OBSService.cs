@@ -20,7 +20,8 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         private readonly MainViewModel vm;
         private readonly Dispatcher Dispatcher = System.Windows.Application.Current.Dispatcher;
 
-        public bool isActive;
+        public bool IsBufferActive;
+        public bool IsConnected;
 
         private string? _address;
         private string? _password;
@@ -35,7 +36,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
 
             OBSWebsocket.ReplayBufferStateChanged += (s, e) =>
             {
-                isActive = e.OutputState.IsActive;
+                IsBufferActive = e.OutputState.IsActive;
             };
         }
 
@@ -44,9 +45,9 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             _address = address;
             _password = password;
 
-            if (!string.IsNullOrEmpty(address) && !string.IsNullOrEmpty(password) && !OBSWebsocket.IsConnected)
+            if (!string.IsNullOrEmpty(address) && !string.IsNullOrEmpty(password) && !IsConnected)
             {
-                vm.WebsocketState = ServiceState.Busy;
+                Dispatcher.Invoke(() => vm.WebsocketState = ServiceState.Busy);
                 LoggingService.Log("Attempting to connect to WebSocket...");
 
                 Task.Run(() =>
@@ -57,36 +58,40 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                     }
                     catch (Exception ex)
                     {
-                        vm.WebsocketState = ServiceState.Offline;
+                        Dispatcher.Invoke(() => vm.WebsocketState = ServiceState.Offline);
                         LoggingService.Log($"Error when connecting to OBS WebSocket: {ex.Message}");
                     }
                 });
             }
         }
 
-        private void Obs_Connected(object? sender, EventArgs e)
+        private async void Obs_Connected(object? sender, EventArgs e)
         {
-            Dispatcher.Invoke(() =>
-            {
-                vm.WebsocketState = ServiceState.Online;
-            });
+            Dispatcher.Invoke(() => vm.WebsocketState = ServiceState.Online);
 
-            isActive = OBSWebsocket.GetReplayBufferStatus();
+            IsConnected = true;
             LoggingService.Log("Connected to WebSocket");
+
+            for (int attempt = 1; attempt <= 10; attempt++)
+            {
+                try
+                {
+                    IsBufferActive = OBSWebsocket.GetReplayBufferStatus();
+                    return;
+                }
+                catch
+                {
+                    await Task.Delay(1000);
+                }
+            }
         }
 
         private void Obs_Disconnected(object? sender, ObsDisconnectionInfo e)
         {
-            Dispatcher.Invoke(() =>
-            {
-                vm.WebsocketState = ServiceState.Offline;
-            });
+            Dispatcher.Invoke(() => vm.WebsocketState = ServiceState.Offline);
 
-            isActive = false;
+            IsConnected = false;
             LoggingService.Log("Disconnected from WebSocket");
-
-            if (!string.IsNullOrEmpty(_address) && !string.IsNullOrEmpty(_password))
-                Connect(_address, _password);
         }
 
         public void StartBuffer()

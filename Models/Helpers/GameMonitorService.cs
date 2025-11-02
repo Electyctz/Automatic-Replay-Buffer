@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Automatic_Replay_Buffer.Models.Helpers
 {
@@ -41,23 +42,21 @@ namespace Automatic_Replay_Buffer.Models.Helpers
             {
                 while (!cts.IsCancellationRequested)
                 {
-                    // if user is fetching game database, pause monitoring
-                    //if (_vm.IsFetching == true)
-                    //{
-                    //    try
-                    //    {
-                    //        while (_vm.IsFetching && !cts.IsCancellationRequested)
-                    //        {
-                    //            _vm.MonitorText = "Paused";
-                    //            await Task.Delay(1000, cts);
-                    //        }
-                    //        continue;
-                    //    }
-                    //    finally
-                    //    {
-                    //        _vm.MonitorText = "Running";
-                    //    }
-                    //}
+                    if (!OBSService.IsConnected)
+                    {
+                        while (!OBSService.IsConnected && !cts.IsCancellationRequested)
+                        {
+                            if (Process.GetProcessesByName("obs64").Length > 0 ||
+                                Process.GetProcessesByName("obs32").Length > 0)
+                            {
+                                OBSService.Connect(StorageService.OBS.Address, StorageService.OBS.Password);
+                            }
+
+                            statusProgress?.Report("Idle");
+                            await Task.Delay(1000, cts);
+                        }
+                        continue;
+                    }
 
                     try
                     {
@@ -155,11 +154,11 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                         lastReported = runningGames.ToList();
                     }
 
-                    if (runningGames.Count > 0 && !OBSService.isActive)
+                    if (runningGames.Count > 0 && !OBSService.IsBufferActive)
                     {
                         OBSService.StartBuffer();
                     }
-                    else if (runningGames.Count == 0 && OBSService.isActive)
+                    else if (runningGames.Count == 0 && OBSService.IsBufferActive)
                     {
                         OBSService.StopBuffer();
                     }

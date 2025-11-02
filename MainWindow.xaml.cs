@@ -17,9 +17,6 @@ using Application = System.Windows.Application;
 
 namespace Automatic_Replay_Buffer
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         private readonly NotifyIcon _notifyIcon;
@@ -50,7 +47,7 @@ namespace Automatic_Replay_Buffer
         {
             if (DataContext is MainViewModel vm)
             {
-                //await vm.InitializeAsync();
+                await vm.InitializeAsync();
             }
         }
 
@@ -69,6 +66,12 @@ namespace Automatic_Replay_Buffer
             {
                 Hide();
             }
+        }
+
+        private void HideWindow()
+        {
+            WindowState = WindowState.Minimized;
+            Hide();
         }
 
         private void ShowWindow()

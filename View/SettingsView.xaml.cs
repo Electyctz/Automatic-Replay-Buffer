@@ -10,14 +10,12 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace Automatic_Replay_Buffer.View
 {
-    /// <summary>
-    /// Interaction logic for SettingsView.xaml
-    /// </summary>
-    public partial class SettingsView : Window
+    public partial class SettingsView : System.Windows.Controls.UserControl
     {
         public SettingsView()
         {

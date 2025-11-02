@@ -143,8 +143,8 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public MainViewModel()
         {
-            HomeVM = new HomeViewModel();
-            SettingsVM = new SettingsViewModel();
+            HomeVM = new HomeViewModel(this);
+            SettingsVM = new SettingsViewModel(this);
             CurrentView = HomeVM;
 
             StorageService = new JsonStorageService(LoggingService);
@@ -152,12 +152,12 @@ namespace Automatic_Replay_Buffer.ViewModel
 
             LoggingService.LogReceived += OnLogReceived;
 
-            HomeViewCommand = new RelayCommand(_ =>
+            HomeViewCommand = new RelayCommand(obj =>
             {
                 CurrentView = HomeVM;
             });
 
-            SettingsViewCommand = new RelayCommand(_ =>
+            SettingsViewCommand = new RelayCommand(obj =>
             {
                 CurrentView = SettingsVM;
             });
@@ -221,8 +221,6 @@ namespace Automatic_Replay_Buffer.ViewModel
             StorageService.Filter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
             StorageService.OBS = await StorageService.LoadConfigAsync("websocket.json", new OBSData { Address = "", Password = "" });
 
-            OBSService.Connect(OBSData.Address, OBSData.Password);
-
             LoggingService.Log("Starting game monitoring service...");
             MonitorState = ServiceState.Busy;
 
@@ -254,7 +252,6 @@ namespace Automatic_Replay_Buffer.ViewModel
         public async Task StartMonitoringAsync()
         {
             MonitorService = new GameMonitorService(LoggingService, StorageService, OBSService, this, true);
-
             ctsMonitor = new CancellationTokenSource();
 
             var statusProgress = new Progress<string>(s =>
