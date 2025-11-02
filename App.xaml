@@ -16,6 +16,14 @@
                 <view:SettingsView />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type viewmodel:GameListViewModel}">
+                <view:GameListView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type viewmodel:FilterListViewModel}">
+                <view:FilterListView />
+            </DataTemplate>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

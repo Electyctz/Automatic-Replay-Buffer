@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Automatic_Replay_Buffer.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -24,7 +25,8 @@ namespace Automatic_Replay_Buffer.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(e?.PropertyName));
         }
 
-        public ICommand SettingsViewCommand => _parent.SettingsViewCommand;
+        public ICommand HomeViewCommand => _parent.HomeViewCommand;
+        public IEnumerable<MonitorData> Games => _parent.ActiveGames;
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }

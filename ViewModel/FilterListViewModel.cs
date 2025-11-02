@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Automatic_Replay_Buffer.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -25,6 +26,7 @@ namespace Automatic_Replay_Buffer.ViewModel
         }
 
         public ICommand SettingsViewCommand => _parent.SettingsViewCommand;
+        public IEnumerable<FilterData> Filters => _parent.StorageService.Filter;
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }

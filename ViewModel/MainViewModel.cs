@@ -34,7 +34,7 @@ namespace Automatic_Replay_Buffer.ViewModel
         public OBSData OBSData => StorageService.OBS;
         public LoggingService LoggingService { get; } = new();
 
-        public ObservableCollection<MonitorData> ActiveGames { get; private set; } = [];
+        public ObservableCollection<MonitorData> ActiveGames { get; private set; } = new();
 
         private static readonly HttpClient HttpClient = new()
         {

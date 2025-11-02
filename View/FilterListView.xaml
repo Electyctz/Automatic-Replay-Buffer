@@ -21,7 +21,9 @@
             <RowDefinition Height="275" />
         </Grid.RowDefinitions>
 
-        <Button Content="&lt;"
+        <Button Grid.Column="0"
+                Grid.Row="0"
+                Content="&lt;"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 HorizontalContentAlignment="Center"
@@ -45,7 +47,30 @@
                 BorderThickness="1"
                 CornerRadius="10"
                 Margin="20,0,20,20">
-            
+
+            <ListView BorderThickness="0"
+                      Margin="10,0,10,0"
+                      ItemsSource="{Binding Filters}">
+                
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            
+                            <TextBlock Text="{Binding Title}"
+                                       Width="150"/>
+                            <TextBlock Text="{Binding Path}"
+                                       Width="150" />
+                            <TextBlock Text="{Binding Executable}"
+                                       Width="150" />
+                            <Button Content="Remove"
+                                    Command="{Binding DataContext.RemoveFilterCommand, 
+                                              RelativeSource={RelativeSource AncestorType=ListView}}"
+                                    CommandParameter="{Binding}" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
         </Border>
     </Grid>
 </UserControl>
