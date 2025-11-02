@@ -140,25 +140,23 @@ namespace Automatic_Replay_Buffer.ViewModel
         public string DatabaseText => ServiceStatus.GetText("Database", DatabaseState);
         public Brush DatabaseBrush => ServiceStatus.GetBrush(DatabaseState);
 
-        private string _titleText;
-        public string TitleText
+        private string _filterTitle;
+        public string FilterTitle
         {
-            get => _titleText;
-            set { _titleText = value; OnPropertyChanged(); }
+            get => _filterTitle;
+            set { _filterTitle = value; OnPropertyChanged(); }
         }
-
-        private string _pathText;
-        public string PathText
+        private string _filterPath;
+        public string FilterPath
         {
-            get => _pathText;
-            set { _pathText = value; OnPropertyChanged(); }
+            get => _filterPath;
+            set { _filterPath = value; OnPropertyChanged(); }
         }
-
-        private string _executableText;
-        public string ExecutableText
+        private string _filterExecutable;
+        public string FilterExecutable
         {
-            get => _executableText;
-            set { _executableText = value; OnPropertyChanged(); }
+            get => _filterExecutable;
+            set { _filterExecutable = value; OnPropertyChanged(); }
         }
         #endregion
 
@@ -182,57 +180,6 @@ namespace Automatic_Replay_Buffer.ViewModel
             {
                 CurrentView = SettingsVM;
             });
-
-            //AddFilterCommand = new RelayCommand(async obj =>
-            //{
-            //    if (obj is not IList selectedItems) return;
-
-            //    try
-            //    {
-            //        bool changed = false;
-
-            //        foreach (var item in selectedItems.Cast<MonitorData>())
-            //        {
-            //            bool exists = StorageService.Filter.Any(f =>
-            //                (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase)) ||
-            //                (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase)) ||
-            //                (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(item.Executable, StringComparison.OrdinalIgnoreCase))
-            //            );
-
-            //            if (!exists)
-            //            {
-            //                StorageService.Filter.Add(new FilterData
-            //                {
-            //                    Title = item.Title,
-            //                    Path = item.Path,
-            //                    Executable = item.Executable
-            //                });
-            //                changed = true;
-            //            }
-            //        }
-
-            //        if (changed)
-            //        {
-            //            await StorageService.SaveAsync("settings.json");
-
-            //            foreach (var item in selectedItems.Cast<MonitorData>().ToList())
-            //            {
-            //                bool isFiltered = StorageService.Filter.Any(f =>
-            //                    (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase)) ||
-            //                    (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase)) ||
-            //                    (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(item.Executable, StringComparison.OrdinalIgnoreCase))
-            //                );
-
-            //                if (isFiltered)
-            //                    ActiveGames.Remove(item);
-            //            }
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        LoggingService.Log($"Failed to add selected items to filter: {ex.Message}");
-            //    }
-            //});
 
             AddFilterCommand = new RelayCommand(async obj => await AddFilterAsync(obj));
         }
@@ -267,14 +214,14 @@ namespace Automatic_Replay_Buffer.ViewModel
                             changed = true;
                     }
                 }
-                else if (!string.IsNullOrWhiteSpace(TitleText) ||
-                         !string.IsNullOrWhiteSpace(PathText) ||
-                         !string.IsNullOrWhiteSpace(ExecutableText))
+                else if (!string.IsNullOrWhiteSpace(FilterTitle) ||
+                         !string.IsNullOrWhiteSpace(FilterPath) ||
+                         !string.IsNullOrWhiteSpace(FilterExecutable))
                 {
-                    if (Utilities.FilterExists(StorageService.Filter, TitleText, PathText, ExecutableText))
+                    if (Utilities.FilterExists(StorageService.Filter, FilterTitle, FilterPath, FilterExecutable))
                     {
                         changed = true;
-                        TitleText = PathText = ExecutableText = string.Empty;
+                        FilterTitle = FilterPath = FilterExecutable = string.Empty;
                     }
                 }
 

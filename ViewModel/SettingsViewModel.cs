@@ -23,7 +23,36 @@ namespace Automatic_Replay_Buffer.ViewModel
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(e?.PropertyName));
         }
+
+        public string FilterTitle
+        {
+            get => _parent.FilterTitle;
+            set
+            {
+                _parent.FilterTitle = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FilterTitle)));
+            }
+        }
+        public string FilterPath
+        {
+            get => _parent.FilterPath;
+            set
+            {
+                _parent.FilterPath = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FilterPath)));
+            }
+        }
+        public string FilterExecutable
+        {
+            get => _parent.FilterExecutable;
+            set
+            {
+                _parent.FilterExecutable = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FilterExecutable)));
+            }
+        }
         public ICommand HomeViewCommand => _parent.HomeViewCommand;
+        public ICommand AddFilterCommand => _parent.AddFilterCommand;
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }
