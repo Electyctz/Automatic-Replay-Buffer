@@ -67,22 +67,11 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         {
             ArgumentNullException.ThrowIfNull(filterCollection);
 
-            bool exists = filterCollection.Any(f =>
+            return filterCollection.Any(f =>
                 (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(title, StringComparison.OrdinalIgnoreCase)) ||
                 (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(path, StringComparison.OrdinalIgnoreCase)) ||
-                (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(executable, StringComparison.OrdinalIgnoreCase)));
-
-            if (exists)
-                return false;
-
-            filterCollection.Add(new FilterData
-            {
-                Title = title,
-                Path = path,
-                Executable = executable
-            });
-
-            return true;
+                (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(executable, StringComparison.OrdinalIgnoreCase))
+            );
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]
