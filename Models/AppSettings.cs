@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Automatic_Replay_Buffer.Models
 {
-    public class GameData
+    public class AppSettings
     {
-        public int ID { get; set; } = 0;
-        public string Name { get; set; } = string.Empty;
-        public int GameType { get; set; } = 0;
+        public List<FilterData> Filter { get; set; } = new();
+        public OBSData OBS { get; set; } = new();
     }
 }

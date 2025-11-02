@@ -2,8 +2,8 @@
 {
     public class MonitorData : ObservableObject
     {
-        public string Title { get; set; }
-        public string Path { get; set; }
-        public string Executable { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Path { get; set; } = string.Empty;
+        public string Executable { get; set; } = string.Empty;
     }
 }
