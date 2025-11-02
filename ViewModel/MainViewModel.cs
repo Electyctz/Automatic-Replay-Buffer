@@ -168,12 +168,11 @@ namespace Automatic_Replay_Buffer.ViewModel
 
                 try
                 {
-                    var existingFilter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
                     bool changed = false;
 
                     foreach (var item in selectedItems.Cast<MonitorData>())
                     {
-                        bool exists = existingFilter.Any(f =>
+                        bool exists = StorageService.Filter.Any(f =>
                             (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase)) ||
                             (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase)) ||
                             (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(item.Executable, StringComparison.OrdinalIgnoreCase))
@@ -181,7 +180,7 @@ namespace Automatic_Replay_Buffer.ViewModel
 
                         if (!exists)
                         {
-                            existingFilter.Add(new FilterData
+                            StorageService.Filter.Add(new FilterData
                             {
                                 Title = item.Title,
                                 Path = item.Path,
@@ -193,8 +192,7 @@ namespace Automatic_Replay_Buffer.ViewModel
 
                     if (changed)
                     {
-                        StorageService.Filter = existingFilter;
-                        await StorageService.SaveConfigAsync("filter.json", existingFilter);
+                        await StorageService.SaveAsync("settings.json");
 
                         foreach (var item in selectedItems.Cast<MonitorData>().ToList())
                         {
@@ -218,8 +216,7 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public async Task InitializeAsync()
         {
-            StorageService.Filter = await StorageService.LoadConfigAsync("filter.json", new List<FilterData>());
-            StorageService.OBS = await StorageService.LoadConfigAsync("websocket.json", new OBSData { Address = "", Password = "" });
+            await StorageService.LoadAsync();
 
             LoggingService.Log("Starting game monitoring service...");
             MonitorState = ServiceState.Busy;
