@@ -51,6 +51,7 @@
 
             <StackPanel Orientation="Vertical"
                         Margin="20">
+                
                 <CheckBox Content="Start with Windows"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Top"

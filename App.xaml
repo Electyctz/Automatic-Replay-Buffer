@@ -24,6 +24,10 @@
                 <view:FilterListView />
             </DataTemplate>
 
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Theme/ListViewStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

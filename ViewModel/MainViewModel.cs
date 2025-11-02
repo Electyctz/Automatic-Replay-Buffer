@@ -46,6 +46,7 @@ namespace Automatic_Replay_Buffer.ViewModel
         public ICommand GameListViewCommand { get; }
         public ICommand FilterListViewCommand { get; }
         public ICommand AddFilterCommand { get; }
+        public ICommand RemoveFilterCommand { get; }
 
         public HomeViewModel HomeVM { get; set; }
         public SettingsViewModel SettingsVM { get; set; }
@@ -231,6 +232,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             FilterListViewCommand = new RelayCommand(obj => CurrentView = FilterListVM);
 
             AddFilterCommand = new RelayCommand(async obj => await AddFilterAsync(obj));
+            RemoveFilterCommand = new RelayCommand(async obj => await RemoveFilterAsync(obj));
         }
 
         public async Task InitializeAsync()
@@ -260,37 +262,45 @@ namespace Automatic_Replay_Buffer.ViewModel
         {
             try
             {
-                bool changed = false;
+                string title;
+                string path;
+                string exe;
 
-                if (obj is IList selectedItems)
+                if (obj is MonitorData item)
                 {
-                    foreach (var item in selectedItems.Cast<MonitorData>())
-                    {
-                        if (Utilities.FilterExists(StorageService.Filter, item.Title, item.Path, item.Executable))
-                            changed = true;
-                    }
+                    title = item.Title;
+                    path = item.Path;
+                    exe = item.Executable;
                 }
-                else if (!string.IsNullOrWhiteSpace(FilterTitle) ||
-                         !string.IsNullOrWhiteSpace(FilterPath) ||
-                         !string.IsNullOrWhiteSpace(FilterExecutable))
+                else
                 {
-                    if (Utilities.FilterExists(StorageService.Filter, FilterTitle, FilterPath, FilterExecutable))
-                    {
-                        changed = true;
-                        FilterTitle = FilterPath = FilterExecutable = string.Empty;
-                    }
+                    title = FilterTitle;
+                    path = FilterPath;
+                    exe = FilterExecutable;
                 }
 
-                if (!changed)
+                if (Utilities.FilterExists(StorageService.Filter, title, path, exe))
+                {
                     return;
+                }
+
+                StorageService.Filter.Add(new FilterData
+                {
+                    Title = title,
+                    Path = path,
+                    Executable = exe
+                });
+
+                if (!(obj is MonitorData))
+                    FilterTitle = FilterPath = FilterExecutable = string.Empty;
 
                 await StorageService.SaveAsync("settings.json");
 
                 var toRemove = ActiveGames
-                    .Where(g => StorageService.Filter.Any(f =>
-                        (!string.IsNullOrEmpty(f.Title) && f.Title.Equals(g.Title, StringComparison.OrdinalIgnoreCase)) ||
-                        (!string.IsNullOrEmpty(f.Path) && f.Path.Equals(g.Path, StringComparison.OrdinalIgnoreCase)) ||
-                        (!string.IsNullOrEmpty(f.Executable) && f.Executable.Equals(g.Executable, StringComparison.OrdinalIgnoreCase))))
+                    .Where(g =>
+                        (!string.IsNullOrEmpty(title) && g.Title.Equals(title, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(path) && g.Path.Equals(path, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(exe) && g.Executable.Equals(exe, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
 
                 foreach (var game in toRemove)
@@ -299,6 +309,38 @@ namespace Automatic_Replay_Buffer.ViewModel
             catch (Exception ex)
             {
                 LoggingService.Log($"Failed to add filter: {ex.Message}");
+            }
+        }
+
+        private async Task RemoveFilterAsync(object obj)
+        {
+            try
+            {
+                if (obj is not FilterData filter)
+                    return;
+
+                string title = filter.Title;
+                string path = filter.Path;
+                string exe = filter.Executable;
+
+                if (!StorageService.Filter.Remove(filter))
+                    return;
+
+                await StorageService.SaveAsync("settings.json");
+
+                var toRemove = ActiveGames
+                    .Where(g =>
+                        (!string.IsNullOrEmpty(title) && g.Title.Equals(title, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(path) && g.Path.Equals(path, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(exe) && g.Executable.Equals(exe, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
+
+                foreach (var game in toRemove)
+                    ActiveGames.Remove(game);
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Log($"Failed to remove filter: {ex.Message}");
             }
         }
 

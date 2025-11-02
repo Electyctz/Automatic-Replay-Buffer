@@ -51,26 +51,68 @@
             <ListView BorderThickness="0"
                       Margin="10,0,10,0"
                       ItemsSource="{Binding Filters}">
-                
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <DockPanel>
-                            
-                            <TextBlock Text="{Binding Title}"
-                                       Width="150"/>
-                            <TextBlock Text="{Binding Path}"
-                                       Width="150" />
-                            <TextBlock Text="{Binding Executable}"
-                                       Width="150" />
-                            <Button Content="Remove"
-                                    Command="{Binding DataContext.RemoveFilterCommand, 
-                                              RelativeSource={RelativeSource AncestorType=ListView}}"
-                                    CommandParameter="{Binding}" />
-                        </DockPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
 
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Title"
+                                        Width="240">
+                            
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    
+                                    <TextBlock Text="{Binding Title}"
+                                               TextTrimming="CharacterEllipsis"
+                                               ToolTip="{Binding Title}" />
+                                    
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <GridViewColumn Header="Path"
+                                        Width="177">
+                            
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    
+                                    <TextBlock Text="{Binding Path}"
+                                               TextTrimming="CharacterEllipsis"
+                                               ToolTip="{Binding Path}" />
+                                    
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <GridViewColumn Header="Executable"
+                                        Width="150">
+                            
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    
+                                    <TextBlock Text="{Binding Executable}"
+                                               TextTrimming="CharacterEllipsis"
+                                               ToolTip="{Binding Executable}" />
+                                    
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <GridViewColumn Header=""
+                                        Width="80">
+                            
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    
+                                    <Button Content="Remove"
+                                            Width="68"
+                                            Command="{Binding DataContext.RemoveFilterCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                            CommandParameter="{Binding}" />
+                                    
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </Border>
     </Grid>
 </UserControl>
