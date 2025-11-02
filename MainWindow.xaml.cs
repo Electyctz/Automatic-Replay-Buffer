@@ -51,10 +51,10 @@ namespace Automatic_Replay_Buffer
             }
         }
 
-        private void Window_Closing(object sender, CancelEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
             if (DataContext is MainViewModel vm)
-                vm.SleepyTime();
+                await vm.SleepyTime();
 
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();
@@ -62,9 +62,12 @@ namespace Automatic_Replay_Buffer
 
         private void Window_StateChanged(object sender, EventArgs e)
         {
-            if (WindowState == WindowState.Minimized)
+            if (DataContext is MainViewModel vm)
             {
-                Hide();
+                if (WindowState == WindowState.Minimized && vm.MinimizeToTray)
+                {
+                    Hide();
+                }
             }
         }
 

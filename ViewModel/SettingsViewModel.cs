@@ -24,6 +24,10 @@ namespace Automatic_Replay_Buffer.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(e?.PropertyName));
         }
 
+        public ICommand HomeViewCommand => _parent.HomeViewCommand;
+        public ICommand AddFilterCommand => _parent.AddFilterCommand;
+        public ICommand FilterListViewCommand => _parent.FilterListViewCommand;
+
         public string FilterTitle
         {
             get => _parent.FilterTitle;
@@ -51,8 +55,51 @@ namespace Automatic_Replay_Buffer.ViewModel
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FilterExecutable)));
             }
         }
-        public ICommand HomeViewCommand => _parent.HomeViewCommand;
-        public ICommand AddFilterCommand => _parent.AddFilterCommand;
+        public string OBSAddress
+        {
+            get => _parent.OBSAddress;
+            set
+            {
+                _parent.OBSAddress = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(OBSAddress)));
+            }
+        }
+        public string OBSPassword
+        {
+            get => _parent.OBSPassword;
+            set
+            {
+                _parent.OBSPassword = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(OBSPassword)));
+            }
+        }
+        public bool StartWithWindows
+        {
+            get => _parent.StartWithWindows;
+            set
+            {
+                _parent.StartWithWindows = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StartWithWindows)));
+            }
+        }
+        public bool MinimizeToTray
+        {
+            get => _parent.MinimizeToTray;
+            set
+            {
+                _parent.MinimizeToTray = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MinimizeToTray)));
+            }
+        }
+        public bool StartMinimized
+        {
+            get => _parent.StartMinimized;
+            set
+            {
+                _parent.StartMinimized = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StartMinimized)));
+            }
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }

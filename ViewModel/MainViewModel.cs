@@ -1,5 +1,6 @@
 ﻿using Automatic_Replay_Buffer.Models;
 using Automatic_Replay_Buffer.Models.Helpers;
+using Automatic_Replay_Buffer.View;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -42,10 +43,14 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public ICommand HomeViewCommand { get; }
         public ICommand SettingsViewCommand { get; }
+        public ICommand GameListViewCommand { get; }
+        public ICommand FilterListViewCommand { get; }
         public ICommand AddFilterCommand { get; }
 
         public HomeViewModel HomeVM { get; set; }
         public SettingsViewModel SettingsVM { get; set; }
+        public GameListViewModel GameListVM { get; set; }
+        public FilterListViewModel FilterListVM { get; set; }
 
         private object _currentView;
         public object CurrentView
@@ -57,7 +62,6 @@ namespace Automatic_Replay_Buffer.ViewModel
                 OnPropertyChanged(nameof(CurrentView));
             }
         }
-
 
         private StringBuilder _logText = new();
         public string LogText
@@ -158,12 +162,46 @@ namespace Automatic_Replay_Buffer.ViewModel
             get => _filterExecutable;
             set { _filterExecutable = value; OnPropertyChanged(); }
         }
+
+        private string _OBSAddress;
+        public string OBSAddress
+        {
+            get => _OBSAddress;
+            set { _OBSAddress = value; OnPropertyChanged(); }
+        }
+        private string _OBSPassword;
+        public string OBSPassword
+        {
+            get => _OBSPassword;
+            set { _OBSPassword = value; OnPropertyChanged(); }
+        }
+
+        private bool _startWithWindows;
+        public bool StartWithWindows
+        {
+            get => _startWithWindows;
+            set { _startWithWindows = value; OnPropertyChanged(); }
+        }
+        private bool _minimizeToTray;
+        public bool MinimizeToTray
+        {
+            get => _minimizeToTray;
+            set { _minimizeToTray = value; OnPropertyChanged(); }
+        }
+        private bool _startMinimized;
+        public bool StartMinimized
+        {
+            get => _startMinimized;
+            set { _startMinimized = value; OnPropertyChanged(); }
+        }
         #endregion
 
         public MainViewModel()
         {
             HomeVM = new HomeViewModel(this);
             SettingsVM = new SettingsViewModel(this);
+            GameListVM = new GameListViewModel(this);
+            FilterListVM = new FilterListViewModel(this);
             CurrentView = HomeVM;
 
             StorageService = new JsonStorageService(LoggingService);
@@ -171,15 +209,26 @@ namespace Automatic_Replay_Buffer.ViewModel
 
             LoggingService.LogReceived += OnLogReceived;
 
-            HomeViewCommand = new RelayCommand(obj =>
+            HomeViewCommand = new RelayCommand(async obj =>
             {
                 CurrentView = HomeVM;
+
+                if (StorageService.OBS.Address != OBSAddress && !string.IsNullOrEmpty(OBSAddress))
+                    StorageService.OBS.Address = OBSAddress;
+
+                if (StorageService.OBS.Password != OBSPassword && !string.IsNullOrEmpty(OBSPassword))
+                    StorageService.OBS.Password = OBSPassword;
+
+                StorageService.Settings.StartWithWindows = StartWithWindows;
+                StorageService.Settings.MinimizeToTray = MinimizeToTray;
+                StorageService.Settings.StartMinimized = StartMinimized;
+
+                await StorageService.SaveAsync("settings.json");
             });
 
-            SettingsViewCommand = new RelayCommand(obj =>
-            {
-                CurrentView = SettingsVM;
-            });
+            SettingsViewCommand = new RelayCommand(obj => CurrentView = SettingsVM);
+            GameListViewCommand = new RelayCommand(obj => CurrentView = GameListVM);
+            FilterListViewCommand = new RelayCommand(obj => CurrentView = FilterListVM);
 
             AddFilterCommand = new RelayCommand(async obj => await AddFilterAsync(obj));
         }
@@ -187,6 +236,13 @@ namespace Automatic_Replay_Buffer.ViewModel
         public async Task InitializeAsync()
         {
             await StorageService.LoadAsync();
+
+            OBSAddress = StorageService.OBS.Address;
+            OBSPassword = StorageService.OBS.Password;
+
+            StartWithWindows = StorageService.Settings.StartWithWindows;
+            MinimizeToTray = StorageService.Settings.MinimizeToTray;
+            StartMinimized = StorageService.Settings.StartMinimized;
 
             LoggingService.Log("Starting game monitoring service...");
             MonitorState = ServiceState.Busy;
@@ -311,8 +367,9 @@ namespace Automatic_Replay_Buffer.ViewModel
             OnPropertyChanged(nameof(LogText));
         }
 
-        public void SleepyTime()
+        public async Task SleepyTime()
         {
+            await StorageService.SaveAsync("settings.json");
             ctsMonitor?.Cancel();
             ctsFetch?.Cancel();
         }

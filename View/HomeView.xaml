@@ -175,6 +175,13 @@
                                Foreground="Black" />
                 </StackPanel>
             </Border>
+
+            <Button Grid.Row="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Opacity="0"
+                    Cursor="Hand"
+                    Command="{Binding GameListViewCommand}" />
         </Grid>
 
         <Separator Grid.Row="3"

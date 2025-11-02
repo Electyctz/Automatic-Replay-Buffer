@@ -25,6 +25,9 @@ namespace Automatic_Replay_Buffer.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(e?.PropertyName));
         }
 
+        public ICommand SettingsViewCommand => _parent.SettingsViewCommand;
+        public ICommand GameListViewCommand => _parent.GameListViewCommand;
+
         public string WebsocketText => _parent.WebsocketText;
         public Brush WebsocketBrush => _parent.WebsocketBrush;
         public string MonitorText => _parent.MonitorText;
@@ -34,7 +37,6 @@ namespace Automatic_Replay_Buffer.ViewModel
         public string StatusText => _parent.StatusText;
         public Brush StatusBrush => _parent.StatusBrush;
         public string LogText => _parent.LogText;
-        public ICommand SettingsViewCommand => _parent.SettingsViewCommand;
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }

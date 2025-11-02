@@ -4,9 +4,48 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Automatic_Replay_Buffer.View"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             xmlns:viewmodel="clr-namespace:Automatic_Replay_Buffer.ViewModel"
+             d:DataContext="{d:DesignInstance Type=viewmodel:FilterListViewModel}"
+             mc:Ignorable="d"
+             d:DesignWidth="732"
+             d:DesignHeight="335"
+             Background="White">
+    
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="732" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60" />
+            <RowDefinition Height="275" />
+        </Grid.RowDefinitions>
+
+        <Button Content="&lt;"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Width="22"
+                Margin="20,0,0,0"
+                Command="{Binding SettingsViewCommand}" />
+
+        <TextBlock Grid.Column="0"
+                   Grid.Row="0"
+                   Text="Filters"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="18" />
+
+        <Border Grid.Column="0"
+                Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BorderBrush="LightGray"
+                BorderThickness="1"
+                CornerRadius="10"
+                Margin="20,0,20,20">
             
+        </Border>
     </Grid>
 </UserControl>
