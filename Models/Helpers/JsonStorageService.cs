@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
     {
         private readonly LoggingService LoggingService;
         public AppSettings Settings { get; private set; } = new();
-        public List<FilterData> Filter => Settings.Filter ??= new List<FilterData>();
+        public ObservableCollection<FilterData> Filter => Settings.Filter ??= new ObservableCollection<FilterData>();
         public OBSData OBS => Settings.OBS;
         public List<GameData> Game { get; set; } = new();
 
