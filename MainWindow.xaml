@@ -4,6 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Automatic_Replay_Buffer"
+        xmlns:viewmodel="clr-namespace:Automatic_Replay_Buffer.ViewModel"
+        d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
         mc:Ignorable="d"
         Title="Automatic Replay Buffer"
         Height="350"
@@ -16,6 +18,8 @@
         StateChanged="Window_StateChanged"
         Icon="/Resources/icon.ico">
     <Grid>
-        
+
+        <ContentControl Content="{Binding CurrentView}" />
+
     </Grid>
 </Window>

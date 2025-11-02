@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Automatic_Replay_Buffer.Models
+namespace Automatic_Replay_Buffer.ViewModel
 {
-    public class TokenData
+    public class SettingsViewModel
     {
-        public string AccessToken { get; set; }
     }
 }

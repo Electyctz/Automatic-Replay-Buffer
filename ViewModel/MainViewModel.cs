@@ -32,7 +32,6 @@ namespace Automatic_Replay_Buffer.ViewModel
         public OBSService OBSService { get; }
         public OBSData OBSData => StorageService.OBS;
         public LoggingService LoggingService { get; } = new();
-        public TwitchService TwitchService;
 
         public ObservableCollection<MonitorData> ActiveGames { get; private set; } = [];
 
@@ -41,9 +40,24 @@ namespace Automatic_Replay_Buffer.ViewModel
             Timeout = TimeSpan.FromSeconds(10)
         };
 
-        public ICommand FetchDatabaseCommand { get; }
-        public ICommand CancelFetchCommand { get; }
+        public ICommand HomeViewCommand { get; }
+        public ICommand SettingsViewCommand { get; }
         public ICommand AddFilterCommand { get; }
+
+        public HomeViewModel HomeVM { get; set; }
+        public SettingsViewModel SettingsVM { get; set; }
+
+        private object _currentView;
+        public object CurrentView
+        {
+            get { return _currentView; }
+            set
+            {
+                _currentView = value;
+                OnPropertyChanged(nameof(CurrentView));
+            }
+        }
+
 
         private StringBuilder _logText = new();
         public string LogText
@@ -56,35 +70,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             }
         }
 
-        //private string _databaseProgressText;
-        //public string DatabaseProgressText
-        //{
-        //    get => _databaseProgressText;
-        //    set
-        //    {
-        //        if (_databaseProgressText != value)
-        //        {
-        //            _databaseProgressText = value;
-        //            OnPropertyChanged(nameof(DatabaseProgressText));
-        //        }
-        //    }
-        //}
-
-        //private int _databaseProgressValue;
-        //public int DatabaseProgressValue
-        //{
-        //    get => _databaseProgressValue;
-        //    set
-        //    {
-        //        if (_databaseProgressValue != value)
-        //        {
-        //            _databaseProgressValue = value;
-        //            OnPropertyChanged(nameof(DatabaseProgressValue));
-        //        }
-        //    }
-        //}
-
-        public System.Windows.Media.Brush StatusBrush =>
+        public Brush StatusBrush =>
         StatusText.Equals("Idle", StringComparison.OrdinalIgnoreCase)
         ? new SolidColorBrush(Colors.DarkOrange)
         : new SolidColorBrush(Colors.Green);
@@ -157,41 +143,24 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public MainViewModel()
         {
+            HomeVM = new HomeViewModel();
+            SettingsVM = new SettingsViewModel();
+            CurrentView = HomeVM;
+
             StorageService = new JsonStorageService(LoggingService);
             OBSService = new OBSService(LoggingService, this);
-            TwitchService = new TwitchService(LoggingService, StorageService);
 
             LoggingService.LogReceived += OnLogReceived;
 
-            //FetchDatabaseCommand = new RelayCommand(async _ =>
-            //{
-            //    ctsFetch = new CancellationTokenSource();
-            //    try
-            //    {
-            //        IsFetching = true;
-            //        //await FetchDatabaseAsync(ctsFetch.Token);
-            //    }
-            //    catch (OperationCanceledException)
-            //    {
-            //        LoggingService.Log("Database operation was cancelled");
-            //    }
-            //    finally
-            //    {
-            //        IsFetching = false;
-            //        ctsFetch.Dispose();
-            //        ctsFetch = null;
+            HomeViewCommand = new RelayCommand(_ =>
+            {
+                CurrentView = HomeVM;
+            });
 
-            //        if (ctsFetch == null)
-            //        {
-            //            StatusText = "Idle";
-            //            DatabaseText = (StorageService.Game?.Count ?? 0) > 0 ? "Available" : "Not Found";
-            //            DatabaseProgressValue = 0;
-            //            DatabaseProgressText = "";
-            //        }
-            //     }
-            //});
-
-            //CancelFetchCommand = new RelayCommand(_ => ctsFetch?.Cancel());
+            SettingsViewCommand = new RelayCommand(_ =>
+            {
+                CurrentView = SettingsVM;
+            });
 
             AddFilterCommand = new RelayCommand(async obj =>
             {
@@ -325,100 +294,6 @@ namespace Automatic_Replay_Buffer.ViewModel
 
             await MonitorService.MonitorGamesAsync(statusProgress, gamesProgress, ctsMonitor.Token);
         }
-
-        //private async Task FetchDatabaseAsync(CancellationToken cts)
-        //{
-        //    TwitchService = new TwitchService(LoggingService, StorageService);
-
-        //    string token;
-
-        //    if (await TwitchService.AuthenticateTokenAsync())
-        //    {
-        //        token = StorageService.Token.AccessToken;
-        //    }
-        //    else
-        //    {
-        //        token = await TwitchService.GetTwitchTokenAsync(StorageService.Client.ID, StorageService.Client.Secret);
-        //    }
-
-        //    try
-        //    {
-        //        if (!string.IsNullOrWhiteSpace(token))
-        //        {
-        //            const int pageSize = 500;
-        //            int offset = 0;
-        //            int totalEstimated = 341_215;
-        //            int totalFetched = 0;
-
-        //            DatabaseProgressValue = 0;
-        //            DatabaseText = "Fetching";
-        //            StatusText = "Fetching Database";
-        //            LoggingService.Log("Fetching database...");
-
-        //            using var http = new HttpClient();
-        //            http.DefaultRequestHeaders.Add("Client-ID", StorageService.Client.ID);
-        //            http.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-
-        //            var allGames = new List<GameData>();
-
-        //            while (true)
-        //            {
-        //                cts.ThrowIfCancellationRequested();
-
-        //                string query = $@"
-        //            fields id, name, game_type;
-        //            where (game_type = 0 | game_type = 1 | game_type = 8 | game_type = 9 | game_type = 10 | game_type = 11);
-        //            limit {pageSize};
-        //            offset {offset};
-        //            sort id asc;";
-
-        //                var request = new HttpRequestMessage(HttpMethod.Post, "https://api.igdb.com/v4/games")
-        //                {
-        //                    Content = new StringContent(query, Encoding.UTF8, "text/plain")
-        //                };
-
-        //                var response = await RateLimitHelper.SendWithRateLimit(http, request, cts);
-
-        //                if (!response.IsSuccessStatusCode)
-        //                    break;
-
-        //                var json = await response.Content.ReadAsStringAsync(cts);
-        //                var games = JsonConvert.DeserializeObject<List<GameData>>(json);
-
-        //                if (games == null || games.Count == 0)
-        //                    break;
-
-        //                allGames.AddRange(games);
-        //                offset += pageSize;
-        //                totalFetched += games.Count;
-
-        //                DatabaseProgressValue = Math.Min(100, (int)((double)totalFetched / totalEstimated * 100));
-        //                DatabaseProgressText = $"Fetched {totalFetched}/{totalEstimated} (estimated) games...";
-        //            }
-
-        //            if (allGames.Count == 0)
-        //            {
-        //                LoggingService.Log("No games were fetched from the database");
-        //                return;
-        //            }
-
-        //            await StorageService.SaveConfigAsync("games.json", allGames);
-
-        //            StorageService.Game = allGames;
-
-        //            DatabaseProgressValue = 100;
-        //            DatabaseProgressText = $"Database fetched! {allGames.Count} games saved.";
-        //            DatabaseText = "Available";
-        //            StatusText = "Idle";
-        //            LoggingService.Log("Finished fetching database");
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LoggingService.Log($"Error while fetching database: {ex.Message}");
-        //        throw;
-        //    }
-        //}
 
         private void OnLogReceived(string msg)
         {

@@ -13,8 +13,6 @@ namespace Automatic_Replay_Buffer.Models.Helpers
     public class JsonStorageService(LoggingService _loggingService)
     {
         private readonly LoggingService LoggingService = _loggingService;
-        public ClientData Client { get; set; } = new();
-        public TokenData Token { get; set; } = new();
         public List<GameData> Game { get; set; } = new();
         public List<FilterData> Filter { get; set; } = new();
         public OBSData OBS { get; set; } = new();

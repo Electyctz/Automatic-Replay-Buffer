@@ -19,7 +19,7 @@ using System.Windows.Shapes;
 using System.Windows.Forms;
 using System.ComponentModel;
 using Application = System.Windows.Application;
-using Automatic_Replay_Buffer.Views;
+using Automatic_Replay_Buffer.View;
 
 namespace Automatic_Replay_Buffer
 {

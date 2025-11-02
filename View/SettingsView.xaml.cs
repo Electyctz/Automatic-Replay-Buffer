@@ -10,17 +10,16 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Automatic_Replay_Buffer.Views
+namespace Automatic_Replay_Buffer.View
 {
     /// <summary>
-    /// Interaction logic for MainViewUC.xaml
+    /// Interaction logic for SettingsView.xaml
     /// </summary>
-    public partial class MainViewUC : UserControl
+    public partial class SettingsView : Window
     {
-        public MainViewUC()
+        public SettingsView()
         {
             InitializeComponent();
         }

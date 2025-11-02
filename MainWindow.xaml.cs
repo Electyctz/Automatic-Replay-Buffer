@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Automatic_Replay_Buffer.ViewModel;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Application = System.Windows.Application;
 
 namespace Automatic_Replay_Buffer
 {
@@ -19,9 +22,60 @@ namespace Automatic_Replay_Buffer
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly NotifyIcon _notifyIcon;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            var vm = new MainViewModel();
+            DataContext = vm;
+
+            var iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/Resources/icon.ico")).Stream;
+
+            _notifyIcon = new NotifyIcon
+            {
+                Icon = new Icon(iconStream),
+                Visible = true,
+                Text = "Automatic Replay Buffer",
+                ContextMenuStrip = new ContextMenuStrip()
+            };
+            _notifyIcon.ContextMenuStrip.Items.Add("Open", null, (s, e) => ShowWindow());
+            _notifyIcon.ContextMenuStrip.Items.Add("Exit", null, (s, e) => Application.Current.Shutdown());
+
+            _notifyIcon.DoubleClick += (s, e) => ShowWindow();
+        }
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                //await vm.InitializeAsync();
+            }
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.SleepyTime();
+
+            _notifyIcon.Visible = false;
+            _notifyIcon.Dispose();
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized)
+            {
+                Hide();
+            }
+        }
+
+        private void ShowWindow()
+        {
+            Show();
+            WindowState = WindowState.Normal;
+            Activate();
         }
     }
 }
