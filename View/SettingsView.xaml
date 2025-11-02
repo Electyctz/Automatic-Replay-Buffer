@@ -7,29 +7,191 @@
              xmlns:viewmodel="clr-namespace:Automatic_Replay_Buffer.ViewModel"
              d:DataContext="{d:DesignInstance Type=viewmodel:SettingsViewModel}"
              mc:Ignorable="d"
-             d:DesignHeight="350"
              d:DesignWidth="730"
+             d:DesignHeight="335"
              Background="White">
     
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="348" />
-            <ColumnDefinition Width="382" />
+            <ColumnDefinition Width="243" />
+            <ColumnDefinition Width="244" />
+            <ColumnDefinition Width="243" />
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="65" />
-            <RowDefinition Height="60" />
-            <RowDefinition Height="60" />
-            <RowDefinition Height="60" />
-            <RowDefinition Height="90" />
+            <RowDefinition Height="50" />
+            <RowDefinition Height="285" />
         </Grid.RowDefinitions>
-        
-        <Button Content="Settings Button"
-                HorizontalAlignment="Center"
+
+        <Button Content="&lt;"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Width="150"
-                Height="50" 
-                Command="{Binding HomeViewCommand}"/>
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Width="20"
+                Margin="20,0,0,0"
+                Command="{Binding HomeViewCommand}" />
+
+        <TextBlock Grid.Column="0"
+                   Grid.Row="0"
+                   Text="Application"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="18"
+                   Margin="10" />
+
+        <Border Grid.Column="0"
+                Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BorderBrush="LightGray"
+                BorderThickness="1"
+                CornerRadius="10"
+                Margin="20,0,10,20">
+
+            <StackPanel Orientation="Vertical"
+                        Margin="20">
+                <CheckBox Content="Start with Windows"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Top"
+                          HorizontalContentAlignment="Center"
+                          VerticalContentAlignment="Center"
+                          FontSize="16"
+                          IsChecked="True" />
+
+                <CheckBox Content="Start minimized"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Top"
+                          HorizontalContentAlignment="Center"
+                          VerticalContentAlignment="Center"
+                          FontSize="16"
+                          Margin="0,10,0,0"
+                          IsChecked="True" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Grid.Column="1"
+                   Grid.Row="0"
+                   Text="WebSocket"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="18"
+                   Margin="10" />
+
+        <Border Grid.Column="1"
+                Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BorderBrush="LightGray"
+                BorderThickness="1"
+                CornerRadius="10"
+                Margin="10,0,10,20">
+
+            <StackPanel Orientation="Vertical"
+                        Margin="20">
+                
+                <StackPanel Orientation="Vertical">
+                    
+                    <TextBlock Text="Address"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               Margin="0,0,0,5"/>
+
+                    <TextBox HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center"
+                             FontSize="16"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Vertical"
+                            Margin="0,10,0,0">
+
+                    <TextBlock Text="Password"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               Margin="0,0,0,5" />
+
+                    <TextBox HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center"
+                             FontSize="16" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Grid.Column="2"
+                   Grid.Row="0"
+                   Text="Filter"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="18"
+                   Margin="10" />
+
+        <Border Grid.Column="2"
+                Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BorderBrush="LightGray"
+                BorderThickness="1"
+                CornerRadius="10"
+                Margin="10,0,20,20">
+
+            <StackPanel Orientation="Vertical"
+                        Margin="20">
+
+                <StackPanel Orientation="Vertical">
+
+                    <TextBlock Text="Title"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               Margin="0,0,0,5" />
+
+                    <TextBox HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center"
+                             FontSize="16" />
+                </StackPanel>
+
+                <StackPanel Orientation="Vertical"
+                            Margin="0,10,0,0">
+
+                    <TextBlock Text="Path"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               Margin="0,0,0,5" />
+
+                    <TextBox HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center"
+                             FontSize="16" />
+                </StackPanel>
+
+                <StackPanel Orientation="Vertical"
+                            Margin="0,10,0,0">
+
+                    <TextBlock Text="Executable"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               Margin="0,0,0,5" />
+
+                    <TextBox HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center"
+                             FontSize="16" />
+                </StackPanel>
+
+                <Button Content="Add"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Width="70"
+                        FontSize="16"
+                        Margin="0,29,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!--<Button Content="Back"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Command="{Binding HomeViewCommand}"/>-->
     </Grid>
 </UserControl>
