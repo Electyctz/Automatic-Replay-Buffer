@@ -401,8 +401,15 @@ namespace Automatic_Replay_Buffer.ViewModel
 
             var gamesProgress = new Progress<List<MonitorData>>(newGames =>
             {
-                var existing = ActiveGames.ToDictionary(g => g.Executable);
-                var incoming = newGames.ToDictionary(g => g.Executable);
+                var existing = ActiveGames
+                .GroupBy(g => g.Executable)
+                .Select(g => g.First())
+                .ToDictionary(g => g.Executable);
+
+                var incoming = newGames
+                .GroupBy(g => g.Executable)
+                .Select(g => g.First())
+                .ToDictionary(g => g.Executable);
 
                 // remove games that are no longer running
                 foreach (var g in ActiveGames.ToList())
