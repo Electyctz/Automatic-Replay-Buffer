@@ -52,7 +52,7 @@
                         Margin="20">
                 
                 <CheckBox Content="Start with Windows"
-                          HorizontalAlignment="Center"
+                          HorizontalAlignment="Left"
                           VerticalAlignment="Top"
                           HorizontalContentAlignment="Center"
                           VerticalContentAlignment="Center"
@@ -60,7 +60,7 @@
                           IsChecked="{Binding StartWithWindows}" />
 
                 <CheckBox Content="Start minimized"
-                          HorizontalAlignment="Center"
+                          HorizontalAlignment="Left"
                           VerticalAlignment="Top"
                           HorizontalContentAlignment="Center"
                           VerticalContentAlignment="Center"
@@ -69,7 +69,7 @@
                           IsChecked="{Binding StartMinimized}" />
 
                 <CheckBox Content="Minimize to tray"
-                          HorizontalAlignment="Center"
+                          HorizontalAlignment="Left"
                           VerticalAlignment="Top"
                           HorizontalContentAlignment="Center"
                           VerticalContentAlignment="Center"
