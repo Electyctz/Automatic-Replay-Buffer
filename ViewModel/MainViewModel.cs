@@ -391,6 +391,7 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public async Task StartMonitoringAsync()
         {
+            // RequireFullscreen always true until I figure out how to detect windowed games properly
             MonitorService = new GameMonitorService(LoggingService, StorageService, OBSService, this, true);
             ctsMonitor = new CancellationTokenSource();
 
