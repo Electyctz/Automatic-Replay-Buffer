@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection.Metadata;
@@ -348,10 +349,15 @@ namespace Automatic_Replay_Buffer.ViewModel
         {
             try
             {
-                string json = await HttpClient.GetStringAsync("https://drive.usercontent.google.com/download?id=1EAtAtC4ln2EJxg91c34Zo3-sJoNzWuhP");
-                List<GameData> database = await Task.Run(() => JsonConvert.DeserializeObject<List<GameData>>(json));
+                using Stream responseStream = await HttpClient.GetStreamAsync("https://drive.usercontent.google.com/download?id=1656mWTYZpEaUHBvk0o9O7-f2zUF6ACT6");
 
-                return database;
+                using var gzipStream = new GZipStream(responseStream, CompressionMode.Decompress);
+                using var reader = new StreamReader(gzipStream);
+
+                string json = await reader.ReadToEndAsync();
+
+                var database = await Task.Run(() => JsonConvert.DeserializeObject<List<GameData>>(json));
+                return database ?? new List<GameData>();
             }
             catch (Exception ex)
             {
