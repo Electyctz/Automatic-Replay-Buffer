@@ -13,14 +13,9 @@
         SizeToContent="WidthAndHeight"
         ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen"
-        Loaded="Window_Loaded"
         Closing="Window_Closing"
         StateChanged="Window_StateChanged"
         Icon="/Resources/icon.ico">
-
-    <Window.DataContext>
-        <viewmodel:MainViewModel />
-    </Window.DataContext>
 
     <Grid>
         <ContentControl Content="{Binding CurrentView}" />
