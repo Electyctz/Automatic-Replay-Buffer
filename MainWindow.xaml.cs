@@ -20,46 +20,15 @@ namespace Automatic_Replay_Buffer
 {
     public partial class MainWindow : Window
     {
-        private readonly NotifyIcon _notifyIcon;
-
         public MainWindow()
         {
             InitializeComponent();
-
-            var vm = new MainViewModel();
-            DataContext = vm;
-
-            var iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/Resources/icon.ico")).Stream;
-
-            _notifyIcon = new NotifyIcon
-            {
-                Icon = new Icon(iconStream),
-                Visible = true,
-                Text = "Automatic Replay Buffer",
-                ContextMenuStrip = new ContextMenuStrip()
-            };
-
-            _notifyIcon.ContextMenuStrip.Items.Add("Open", null, (s, e) => ShowWindow());
-            _notifyIcon.ContextMenuStrip.Items.Add("Exit", null, (s, e) => Application.Current.Shutdown());
-
-            _notifyIcon.DoubleClick += (s, e) => ShowWindow();
-        }
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is MainViewModel vm)
-            {
-                await vm.InitializeAsync();
-            }
         }
 
         private async void Window_Closing(object sender, CancelEventArgs e)
         {
             if (DataContext is MainViewModel vm)
                 await vm.SleepyTime();
-
-            _notifyIcon.Visible = false;
-            _notifyIcon.Dispose();
         }
 
         private void Window_StateChanged(object sender, EventArgs e)
@@ -71,13 +40,6 @@ namespace Automatic_Replay_Buffer
                     Hide();
                 }
             }
-        }
-
-        private void ShowWindow()
-        {
-            Show();
-            WindowState = WindowState.Normal;
-            Activate();
         }
     }
 }
