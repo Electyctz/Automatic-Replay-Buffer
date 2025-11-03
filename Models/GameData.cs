@@ -8,8 +8,6 @@ namespace Automatic_Replay_Buffer.Models
 {
     public class GameData
     {
-        public int ID { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
-        public int GameType { get; set; } = 0;
     }
 }
