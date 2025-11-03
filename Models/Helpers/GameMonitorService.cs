@@ -102,7 +102,7 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                                 path ??= "unknown";
                             }
 
-                            // check if window size matches fullscreen
+                            // need to figure out how to filter windowed apps, always set to true for now
                             if (RequireFullscreen)
                             {
                                 GetWindowRect(hWnd, out RECT rect);
