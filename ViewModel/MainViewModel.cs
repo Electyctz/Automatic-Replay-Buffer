@@ -1,6 +1,7 @@
 ﻿using Automatic_Replay_Buffer.Models;
 using Automatic_Replay_Buffer.Models.Helpers;
 using Automatic_Replay_Buffer.View;
+using IWshRuntimeLibrary;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -21,12 +22,12 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using Brush = System.Windows.Media.Brush;
+using File = System.IO.File;
 
 namespace Automatic_Replay_Buffer.ViewModel
 {
     public class MainViewModel : ObservableObject
     {
-        #region
         private CancellationTokenSource? ctsFetch;
         private CancellationTokenSource? ctsMonitor;
         public JsonStorageService StorageService;
@@ -182,7 +183,44 @@ namespace Automatic_Replay_Buffer.ViewModel
         public bool StartWithWindows
         {
             get => _startWithWindows;
-            set { _startWithWindows = value; OnPropertyChanged(); }
+            set
+            {
+                if (_startWithWindows != value)
+                {
+                    _startWithWindows = value;
+                    OnPropertyChanged();
+
+                    // create or remove shortcut in startup folder
+                    try
+                    {
+                        string startupPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+                        string shortcutPath = Path.Combine(startupPath, "Automatic Replay Buffer.lnk");
+                        string exePath = Environment.ProcessPath!;
+
+                        if (value)
+                        {
+                            if (!File.Exists(shortcutPath))
+                            {
+                                var shell = new WshShell();
+                                IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutPath);
+                                shortcut.TargetPath = exePath;
+                                shortcut.WorkingDirectory = Path.GetDirectoryName(exePath);
+                                shortcut.Description = "Start Automatic Replay Buffer automatically at login";
+                                shortcut.Save();
+                            }
+                        }
+                        else
+                        {
+                            if (File.Exists(shortcutPath))
+                                File.Delete(shortcutPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Log($"Failed to {(value ? "create" : "remove")} startup shortcut: {ex.Message}");
+                    }
+                }
+            }
         }
         private bool _minimizeToTray;
         public bool MinimizeToTray
@@ -196,7 +234,6 @@ namespace Automatic_Replay_Buffer.ViewModel
             get => _startMinimized;
             set { _startMinimized = value; OnPropertyChanged(); }
         }
-        #endregion
 
         public MainViewModel()
         {
@@ -238,8 +275,6 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public async Task InitializeAsync()
         {
-            await StorageService.LoadAsync();
-
             StartWithWindows = StorageService.Settings.StartWithWindows;
             MinimizeToTray = StorageService.Settings.MinimizeToTray;
             StartMinimized = StorageService.Settings.StartMinimized;
