@@ -1,17 +1,10 @@
 ﻿using Automatic_Replay_Buffer.ViewModel;
-using OBSWebsocketDotNet;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Automatic_Replay_Buffer.Models.Helpers
 {

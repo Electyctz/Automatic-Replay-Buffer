@@ -1,14 +1,6 @@
-﻿using Automatic_Replay_Buffer.Models;
-using Automatic_Replay_Buffer.ViewModel;
+﻿using Automatic_Replay_Buffer.ViewModel;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Communication;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Threading;
 
 namespace Automatic_Replay_Buffer.Models.Helpers

@@ -1,13 +1,6 @@
-﻿using Automatic_Replay_Buffer.ViewModel;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Automatic_Replay_Buffer.Models.Helpers
 {

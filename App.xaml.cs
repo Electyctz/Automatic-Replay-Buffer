@@ -1,9 +1,5 @@
 ﻿using Automatic_Replay_Buffer.ViewModel;
-using System;
-using System.Diagnostics;
-using System.Drawing;
 using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
 
