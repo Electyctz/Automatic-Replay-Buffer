@@ -4,7 +4,8 @@ namespace Automatic_Replay_Buffer.Models
 {
     public class AppSettings
     {
-        public ObservableCollection<FilterData> Filter { get; set; } = new();
+        public ObservableCollection<FilterData> Whitelist { get; set; } = new();
+        public ObservableCollection<FilterData> Blacklist { get; set; } = new();
         public OBSData OBS { get; set; } = new();
         public bool StartWithWindows { get; set; } = false;
         public bool MinimizeToTray { get; set; } = false;
