@@ -8,7 +8,8 @@ namespace Automatic_Replay_Buffer.Models.Helpers
     {
         private readonly LoggingService LoggingService;
         public AppSettings Settings { get; private set; } = new();
-        public ObservableCollection<FilterData> Filter => Settings.Filter ??= new ObservableCollection<FilterData>();
+        public ObservableCollection<FilterData> Whitelist => Settings.Whitelist ??= new ObservableCollection<FilterData>();
+        public ObservableCollection<FilterData> Blacklist => Settings.Blacklist ??= new ObservableCollection<FilterData>();
         public OBSData OBS => Settings.OBS;
         public List<GameData> Game { get; set; } = new();
 
