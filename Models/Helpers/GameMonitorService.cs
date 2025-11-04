@@ -15,15 +15,13 @@ namespace Automatic_Replay_Buffer.Models.Helpers
         private readonly OBSService OBSService;
         private readonly MainViewModel vm;
         private readonly Dispatcher Dispatcher = System.Windows.Application.Current.Dispatcher;
-        private readonly bool RequireFullscreen;
 
-        public GameMonitorService(LoggingService _LoggingService, JsonStorageService _StorageService, OBSService _OBSService, MainViewModel _vm, bool _RequireFullscreen)
+        public GameMonitorService(LoggingService _LoggingService, JsonStorageService _StorageService, OBSService _OBSService, MainViewModel _vm)
         {
             LoggingService = _LoggingService;
             StorageService = _StorageService;
             OBSService = _OBSService;
             vm = _vm;
-            RequireFullscreen = _RequireFullscreen;
         }
 
         public async Task MonitorGamesAsync(IProgress<string> statusProgress, IProgress<List<MonitorData>> gamesProgress, CancellationToken cts)
@@ -102,19 +100,15 @@ namespace Automatic_Replay_Buffer.Models.Helpers
                                 path ??= "unknown";
                             }
 
-                            // need to figure out how to filter windowed apps, always set to true for now
-                            if (RequireFullscreen)
-                            {
-                                GetWindowRect(hWnd, out RECT rect);
-                                var screenWidth = SystemParameters.PrimaryScreenWidth;
-                                var screenHeight = SystemParameters.PrimaryScreenHeight;
-                                if ((rect.Right - rect.Left) != (int)screenWidth ||
-                                    (rect.Bottom - rect.Top) != (int)screenHeight)
-                                    return true;
-                            }
+                            GetWindowRect(hWnd, out RECT rect);
+                            var screenWidth = SystemParameters.PrimaryScreenWidth;
+                            var screenHeight = SystemParameters.PrimaryScreenHeight;
+                            if ((rect.Right - rect.Left) != (int)screenWidth ||
+                                (rect.Bottom - rect.Top) != (int)screenHeight)
+                                return true;
 
                             // check against user filter
-                            bool isFiltered = (StorageService.Filter ?? Enumerable.Empty<FilterData>()) .Any(f =>
+                            bool isFiltered = (StorageService.Blacklist ?? Enumerable.Empty<FilterData>()) .Any(f =>
                                 (!string.IsNullOrEmpty(f.Title) && title.Contains(f.Title, StringComparison.OrdinalIgnoreCase)) ||
                                 (!string.IsNullOrEmpty(f.Path) && path.Contains(f.Path, StringComparison.OrdinalIgnoreCase)) ||
                                 (!string.IsNullOrEmpty(f.Executable) && exe.Contains(f.Executable, StringComparison.OrdinalIgnoreCase))
