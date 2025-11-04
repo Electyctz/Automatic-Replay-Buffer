@@ -21,7 +21,7 @@ namespace Automatic_Replay_Buffer.ViewModel
         }
 
         public ICommand HomeViewCommand => _parent.HomeViewCommand;
-        public ICommand AddFilterCommand => _parent.AddFilterCommand;
+        public ICommand AddFilterCommand => _parent.AddBlacklistCommand;
         public IEnumerable<MonitorData> ActiveGames => _parent.ActiveGames;
 
         public event PropertyChangedEventHandler? PropertyChanged;

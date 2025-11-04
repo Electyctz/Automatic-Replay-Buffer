@@ -35,8 +35,10 @@ namespace Automatic_Replay_Buffer.ViewModel
         public ICommand SettingsViewCommand { get; }
         public ICommand GameListViewCommand { get; }
         public ICommand FilterListViewCommand { get; }
-        public ICommand AddFilterCommand { get; }
-        public ICommand RemoveFilterCommand { get; }
+        public ICommand AddWhitelistCommand { get; }
+        public ICommand AddBlacklistCommand { get; }
+        public ICommand RemoveWhitelistCommand { get; }
+        public ICommand RemoveBlacklistCommand { get; }
 
         public HomeViewModel HomeVM { get; set; }
         public SettingsViewModel SettingsVM { get; set; }
@@ -257,8 +259,10 @@ namespace Automatic_Replay_Buffer.ViewModel
             GameListViewCommand = new RelayCommand(obj => CurrentView = GameListVM);
             FilterListViewCommand = new RelayCommand(obj => CurrentView = FilterListVM);
 
-            AddFilterCommand = new RelayCommand(async obj => await AddFilterAsync(obj));
-            RemoveFilterCommand = new RelayCommand(async obj => await RemoveFilterAsync(obj));
+            AddWhitelistCommand = new RelayCommand(async obj => await AddFilterAsync(obj, true));
+            AddBlacklistCommand = new RelayCommand(async obj => await AddFilterAsync(obj, false));
+            RemoveWhitelistCommand = new RelayCommand(async obj => await RemoveFilterAsync(obj, true));
+            RemoveBlacklistCommand = new RelayCommand(async obj => await RemoveFilterAsync(obj, false));
         }
 
         public async Task InitializeAsync()
@@ -282,7 +286,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             await StartMonitoringAsync();
         }
 
-        private async Task AddFilterAsync(object obj)
+        private async Task AddFilterAsync(object obj, bool whitelist = false)
         {
             try
             {
@@ -303,22 +307,28 @@ namespace Automatic_Replay_Buffer.ViewModel
                     exe = FilterExecutable?.Trim() ?? string.Empty;
                 }
 
-                if (Utilities.FilterExists(StorageService.Filter, title, path, exe))
+                var targetCollection = whitelist ? StorageService.Whitelist : StorageService.Blacklist;
+
+                if (Utilities.FilterExists(targetCollection, title, path, exe))
                 {
-                    return; 
+                    return;
                 }
 
-                StorageService.Filter.Add(new FilterData
+                targetCollection.Add(new FilterData
                 {
                     Title = title,
                     Path = path,
                     Executable = exe
                 });
 
-                if (obj is not MonitorData)
-                    FilterTitle = FilterPath = FilterExecutable = string.Empty;
-
                 await StorageService.SaveAsync("settings.json");
+
+                if (obj is not MonitorData)
+                {
+                    FilterTitle = string.Empty;
+                    FilterPath = string.Empty;
+                    FilterExecutable = string.Empty;
+                }
 
                 var toRemove = ActiveGames
                     .Where(g =>
@@ -336,7 +346,7 @@ namespace Automatic_Replay_Buffer.ViewModel
             }
         }
 
-        private async Task RemoveFilterAsync(object obj)
+        private async Task RemoveFilterAsync(object obj, bool whitelist = false)
         {
             try
             {
@@ -347,7 +357,9 @@ namespace Automatic_Replay_Buffer.ViewModel
                 string path = filter.Path;
                 string exe = filter.Executable;
 
-                if (!StorageService.Filter.Remove(filter))
+                var targetCollection = whitelist ? StorageService.Whitelist : StorageService.Blacklist;
+
+                if (!targetCollection.Remove(filter))
                     return;
 
                 await StorageService.SaveAsync("settings.json");
@@ -391,8 +403,7 @@ namespace Automatic_Replay_Buffer.ViewModel
 
         public async Task StartMonitoringAsync()
         {
-            // RequireFullscreen always true until I figure out how to detect windowed games properly
-            MonitorService = new GameMonitorService(LoggingService, StorageService, OBSService, this, true);
+            MonitorService = new GameMonitorService(LoggingService, StorageService, OBSService, this);
             ctsMonitor = new CancellationTokenSource();
 
             var statusProgress = new Progress<string>(s =>

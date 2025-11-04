@@ -21,8 +21,9 @@ namespace Automatic_Replay_Buffer.ViewModel
         }
 
         public ICommand SettingsViewCommand => _parent.SettingsViewCommand;
-        public ICommand RemoveFilterCommand => _parent.RemoveFilterCommand;
-        public IEnumerable<FilterData> Filters => _parent.StorageService.Filter;
+        public ICommand RemoveFilterCommand => _parent.RemoveBlacklistCommand;
+        public IEnumerable<FilterData> Blacklist => _parent.StorageService.Blacklist;
+        public IEnumerable<FilterData> Whitelist => _parent.StorageService.Whitelist;
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }

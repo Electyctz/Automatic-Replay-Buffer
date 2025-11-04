@@ -50,7 +50,7 @@
 
             <ListView BorderThickness="0"
                       Margin="10,0,10,0"
-                      ItemsSource="{Binding Filters}">
+                      ItemsSource="{Binding Blacklist}">
 
                 <ListView.View>
                     <GridView>

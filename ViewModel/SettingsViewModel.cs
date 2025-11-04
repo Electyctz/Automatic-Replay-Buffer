@@ -20,7 +20,8 @@ namespace Automatic_Replay_Buffer.ViewModel
         }
 
         public ICommand HomeViewCommand => _parent.HomeViewCommand;
-        public ICommand AddFilterCommand => _parent.AddFilterCommand;
+        public ICommand AddWhitelistCommand => _parent.AddWhitelistCommand;
+        public ICommand AddBlacklistCommand => _parent.AddBlacklistCommand;
         public ICommand FilterListViewCommand => _parent.FilterListViewCommand;
 
         public string FilterTitle
