@@ -76,6 +76,7 @@
                           FontSize="16"
                           Margin="0,10,0,0"
                           IsChecked="{Binding MinimizeToTray}" />
+                
             </StackPanel>
         </Border>
 
@@ -111,6 +112,7 @@
                              VerticalAlignment="Center"
                              FontSize="16"
                              Text="{Binding OBSAddress, UpdateSourceTrigger=PropertyChanged}" />
+                    
                 </StackPanel>
 
                 <StackPanel Orientation="Vertical"
@@ -126,6 +128,7 @@
                              VerticalAlignment="Center"
                              FontSize="16"
                              Text="{Binding OBSPassword, UpdateSourceTrigger=PropertyChanged}" />
+                    
                 </StackPanel>
             </StackPanel>
         </Border>
@@ -137,6 +140,17 @@
                    VerticalAlignment="Center"
                    FontSize="18"
                    Margin="0,10,10,10" />
+
+        <Button Grid.Column="2"
+                Content="List"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Width="52"
+                Height="22"
+                Margin="0,0,20,0"
+                Command="{Binding FilterListViewCommand}" />
 
         <Border Grid.Column="2"
                 Grid.Row="1"
@@ -162,6 +176,7 @@
                              VerticalAlignment="Center"
                              FontSize="16"
                              Text="{Binding FilterTitle, UpdateSourceTrigger=PropertyChanged}" />
+                    
                 </StackPanel>
 
                 <StackPanel Orientation="Vertical"
@@ -177,6 +192,7 @@
                              VerticalAlignment="Center"
                              FontSize="16"
                              Text="{Binding FilterPath, UpdateSourceTrigger=PropertyChanged}" />
+                    
                 </StackPanel>
 
                 <StackPanel Orientation="Vertical"
@@ -192,21 +208,23 @@
                              VerticalAlignment="Center"
                              FontSize="16"
                              Text="{Binding FilterExecutable, UpdateSourceTrigger=PropertyChanged}" />
+                    
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal">
 
-                    <Button Content="List"
+                    <Button Content="Whitelist"
                             Width="81"
                             FontSize="16"
                             Margin="0,19,0,0"
-                            Command="{Binding FilterListViewCommand}"/>
+                            Command="{Binding AddWhitelistCommand}"/>
 
-                    <Button Content="Add"
+                    <Button Content="Blacklist"
                             Width="81"
                             FontSize="16"
                             Margin="10,19,0,0"
-                            Command="{Binding AddFilterCommand}" />
+                            Command="{Binding AddBlacklistCommand}" />
+                    
                 </StackPanel>
             </StackPanel>
         </Border>
